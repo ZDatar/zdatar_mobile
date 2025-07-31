@@ -1,6 +1,11 @@
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'models/app_state.dart';
+import 'screens/home_page.dart';
+import 'screens/favorites_page.dart';
+import 'screens/my_data_page.dart';
+import 'screens/market_place_page.dart';
+import 'screens/deal_detail_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,7 +21,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Namer App',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF01005E)),
         ),
         home: MyHomePage(),
       ),
@@ -24,48 +29,69 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
-
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
-
-  var favorites = <WordPair>[];
-
-  void toggleFavorite() {
-    if (favorites.contains(current)) {
-      favorites.remove(current);
-    } else {
-      favorites.add(current);
-    }
-    notifyListeners();
-  }
-}
-
-// ...
-
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var selectedIndex = 0;
+  var selectedIndex = 2; // Start with Home selected
+  bool showDetailPage = false;
+  Map<String, dynamic>? currentDeal;
+
+  void showDealDetail(String dealTitle, String reward, IconData icon) {
+    setState(() {
+      showDetailPage = true;
+      currentDeal = {
+        'title': dealTitle,
+        'reward': reward,
+        'icon': icon,
+      };
+    });
+  }
+
+  void hideDealDetail() {
+    setState(() {
+      showDetailPage = false;
+      currentDeal = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     Widget page;
-    switch (selectedIndex) {
-      case 0:
-        page = GeneratorPage();
-        break;
-      case 1:
-        page = FavoritesPage();
-        break;
-      default:
-        throw UnimplementedError('no widget for $selectedIndex');
+    
+    if (showDetailPage && currentDeal != null) {
+      // Show deal detail page
+      page = DealDetailPage(
+        dealTitle: currentDeal!['title'],
+        reward: currentDeal!['reward'],
+        icon: currentDeal!['icon'],
+        onBack: hideDealDetail,
+      );
+    } else {
+      // Show regular pages
+      switch (selectedIndex) {
+        case 0:
+          page = MyDataPage();
+          break;
+        case 1:
+          page = MarketPlacePage(onDealTap: showDealDetail);
+          break;
+        case 2:
+          page = HomePage();
+          break;
+        case 3:
+          page = FavoritesPage(); // Placeholder for Wallet
+          break;
+        case 4:
+          page = FavoritesPage(); // Placeholder for Profile
+          break;
+        default:
+          throw UnimplementedError('no widget for $selectedIndex');
+      }
     }
 
     return LayoutBuilder(
@@ -80,120 +106,40 @@ class _MyHomePageState extends State<MyHomePage> {
             onTap: (value) {
               setState(() {
                 selectedIndex = value;
+                showDetailPage = false; // Hide detail page when switching tabs
+                currentDeal = null;
               });
             },
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            selectedItemColor: Theme.of(context).colorScheme.primary,
+            unselectedItemColor: Colors.grey,
+            type: BottomNavigationBarType.fixed,
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home),
+                icon: Icon(Icons.dataset),
+                label: 'My Data',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.shop_2_rounded),
+                label: 'Market',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_filled),
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.favorite),
-                label: 'Favorites',
+                icon: Icon(Icons.wallet),
+                label: 'Wallet',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
               ),
             ],
           ),
         );
-      }
-    );
-  }
-}
-
-class FavoritesPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    
-    if (appState.favorites.isEmpty) {
-      return Center(
-        child: Text('No favorites yet.'),
-      );
-    }
-
-    return ListView(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text('You have ${appState.favorites.length} favorites:'),
-        ),
-        for (var pair in appState.favorites)
-          ListTile(
-            leading: Icon(Icons.favorite),
-            title: Text(pair.asLowerCase),
-          ),
-      ],
-    );
-  }
-}
-
-class GeneratorPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var pair = appState.current;
-
-    IconData icon;
-    if (appState.favorites.contains(pair)) {
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
-    }
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          BigCard(pair: pair),
-          SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.toggleFavorite();
-                },
-                icon: Icon(icon),
-                label: Text('Like'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  appState.getNext();
-                },
-                child: Text('Next'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class BigCard extends StatelessWidget {
-  const BigCard({super.key, required this.pair});
-
-  final WordPair pair;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = theme.textTheme.displayMedium!.copyWith(
-      color: theme.colorScheme.onPrimary,
-    );
-
-    return Card(
-      color: theme.colorScheme.primary,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Text(
-          pair.asLowerCase,
-          style: style,
-          semanticsLabel: "${pair.first} ${pair.second}",
-        ),
-      ),
+      },
     );
   }
 }
