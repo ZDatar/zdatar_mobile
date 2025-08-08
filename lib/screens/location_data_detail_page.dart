@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 class LocationDataDetailPage extends StatefulWidget {
   const LocationDataDetailPage({super.key});
@@ -101,7 +100,7 @@ class _LocationDataDetailPageState extends State<LocationDataDetailPage> {
                             ),
                             const SizedBox(height: 16),
                             // Simple graph representation
-                            Container(
+                            SizedBox(
                               height: 120,
                               child: CustomPaint(
                                 size: Size.infinite,
