@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -16,25 +17,17 @@ class HomePage extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
               Text(
-                'Hi John!',
+                'Hi John! 👋',
                 style: theme.textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your Data',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: Colors.tealAccent,
+                  color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 24),
               Card(
-                color: theme.colorScheme.secondary,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: AppRadius.largeRadius,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
@@ -43,15 +36,17 @@ class HomePage extends StatelessWidget {
                       Text(
                         '\$12.08',
                         style: theme.textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
+                          color: theme.colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
+                          fontSize: MediaQuery.of(context).size.width * 0.08,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'earned month!',
                         style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
+                          color: theme.colorScheme.onSurface,
+                          fontSize: MediaQuery.of(context).size.width * 0.06,
                         ),
                       ),
                     ],
@@ -63,12 +58,12 @@ class HomePage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Card(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.largeRadius,
                       ),
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.largeRadius,
                         onTap: () {},
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 24),
@@ -80,7 +75,7 @@ class HomePage extends StatelessWidget {
                               Text(
                                 'View Data',
                                 style: theme.textTheme.titleMedium?.copyWith(
-                                  color: Colors.white,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -92,12 +87,12 @@ class HomePage extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Card(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.largeRadius,
                       ),
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.largeRadius,
                         onTap: () {},
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 24),
@@ -109,7 +104,7 @@ class HomePage extends StatelessWidget {
                               Text(
                                 'Data Deals',
                                 style: theme.textTheme.titleMedium?.copyWith(
-                                  color: Colors.white,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -122,12 +117,12 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Card(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: AppRadius.largeRadius,
                 ),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: AppRadius.largeRadius,
                   onTap: () {},
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -139,7 +134,7 @@ class HomePage extends StatelessWidget {
                         Text(
                           'Withdraw Rewards',
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],

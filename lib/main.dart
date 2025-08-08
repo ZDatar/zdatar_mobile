@@ -6,6 +6,7 @@ import 'screens/favorites_page.dart';
 import 'screens/my_data_page.dart';
 import 'screens/market_place_page.dart';
 import 'screens/deal_detail_page.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,17 +14,22 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
-      child: MaterialApp(
-        title: 'Namer App',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF01005E)),
-        ),
-        home: MyHomePage(),
+      child: Consumer<MyAppState>(
+        builder: (context, appState, child) {
+          return MaterialApp(
+            title: 'Namer App',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: appState.themeMode,
+            home: MyHomePage(),
+          );
+        },
       ),
     );
   }
@@ -62,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     Widget page;
+    final theme = Theme.of(context);
     
     if (showDetailPage && currentDeal != null) {
       // Show deal detail page
@@ -98,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
       builder: (context, constraints) {
         return Scaffold(
           body: Container(
-            color: Theme.of(context).colorScheme.primaryContainer,
+            color: theme.colorScheme.primary,
             child: page,
           ),
           bottomNavigationBar: BottomNavigationBar(
@@ -112,8 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             showSelectedLabels: true,
             showUnselectedLabels: true,
-            selectedItemColor: Theme.of(context).colorScheme.primary,
-            unselectedItemColor: Colors.grey,
+            backgroundColor: theme.appBarTheme.backgroundColor,
             type: BottomNavigationBarType.fixed,
             items: const [
               BottomNavigationBarItem(

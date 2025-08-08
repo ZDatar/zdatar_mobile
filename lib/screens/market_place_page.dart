@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'deal_detail_page.dart';
+import '../theme/app_colors.dart';
 
 class MarketPlacePage extends StatelessWidget {
   final Function(String, String, IconData)? onDealTap;
@@ -34,7 +35,11 @@ class MarketPlacePage extends StatelessWidget {
                 detail: 'Detail',
                 onTap: () {
                   if (onDealTap != null) {
-                    onDealTap!('Urban Mobility Study', '\$1.35', Icons.location_on);
+                    onDealTap!(
+                      'Urban Mobility Study',
+                      '\$1.35',
+                      Icons.location_on,
+                    );
                   } else {
                     Navigator.push(
                       context,
@@ -103,25 +108,23 @@ class _MarketCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       color: Colors.white.withValues(alpha: 0.08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.largeRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.largeRadius,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: Colors.tealAccent, size: 36),
+              Icon(icon, color: theme.colorScheme.secondary, size: 40),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      ' $reward Reward',
+                      '$reward Reward',
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
@@ -145,14 +148,6 @@ class _MarketCard extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
-                        const Spacer(),
-                        Text(
-                          '$detail ▼',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.tealAccent,
-                            fontSize: 12,
-                          ),
-                        ),
                       ],
                     ),
                   ],
@@ -164,4 +159,4 @@ class _MarketCard extends StatelessWidget {
       ),
     );
   }
-} 
+}
