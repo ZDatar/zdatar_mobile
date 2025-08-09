@@ -5,7 +5,6 @@ import 'screens/home_page.dart';
 import 'screens/favorites_page.dart';
 import 'screens/my_data_page.dart';
 import 'screens/market_place_page.dart';
-import 'screens/deal_detail_page.dart';
 import 'theme/app_theme.dart';
 
 void main() {
