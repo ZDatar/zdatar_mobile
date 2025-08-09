@@ -43,50 +43,31 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 2; // Start with Home selected
-  bool showDetailPage = false;
-  Map<String, dynamic>? currentDeal;
-
-  void hideDealDetail() {
-    setState(() {
-      showDetailPage = false;
-      currentDeal = null;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     Widget page;
     final theme = Theme.of(context);
 
-    if (showDetailPage && currentDeal != null) {
-      // Show deal detail page
-      page = DealDetailPage(
-        dealTitle: currentDeal!['title'],
-        reward: currentDeal!['reward'],
-        icon: currentDeal!['icon'],
-        onBack: hideDealDetail,
-      );
-    } else {
-      // Show regular pages
-      switch (selectedIndex) {
-        case 0:
-          page = MyDataPage();
-          break;
-        case 1:
-          page = const MarketPlacePage();
-          break;
-        case 2:
-          page = HomePage();
-          break;
-        case 3:
-          page = FavoritesPage(); // Placeholder for Wallet
-          break;
-        case 4:
-          page = FavoritesPage(); // Placeholder for Profile
-          break;
-        default:
-          throw UnimplementedError('no widget for $selectedIndex');
-      }
+    // Show regular pages
+    switch (selectedIndex) {
+      case 0:
+        page = MyDataPage();
+        break;
+      case 1:
+        page = const MarketPlacePage();
+        break;
+      case 2:
+        page = HomePage();
+        break;
+      case 3:
+        page = FavoritesPage(); // Placeholder for Wallet
+        break;
+      case 4:
+        page = FavoritesPage(); // Placeholder for Profile
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
     }
 
     return LayoutBuilder(
@@ -98,8 +79,6 @@ class _MyHomePageState extends State<MyHomePage> {
             onTap: (value) {
               setState(() {
                 selectedIndex = value;
-                showDetailPage = false; // Hide detail page when switching tabs
-                currentDeal = null;
               });
             },
             showSelectedLabels: true,
