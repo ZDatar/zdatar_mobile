@@ -47,7 +47,11 @@ class _LocationDataDetailPageState extends State<LocationDataDetailPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Icon(Icons.location_on, color: Colors.blue, size: 80),
+                            Icon(
+                              Icons.location_on,
+                              color: Colors.blue,
+                              size: 80,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'Location Data',
@@ -77,7 +81,9 @@ class _LocationDataDetailPageState extends State<LocationDataDetailPage> {
                               });
                             },
                             activeColor: Colors.blue,
-                            activeTrackColor: Colors.blue.withValues(alpha: 0.3),
+                            activeTrackColor: Colors.blue.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                         ],
                       ),
@@ -132,8 +138,10 @@ class _LocationDataDetailPageState extends State<LocationDataDetailPage> {
                             // Handle manage sharing settings
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Sharing settings opened'),
-                                backgroundColor: Colors.blue,
+                                content: Center(
+                                  child: Text('Sharing settings opened'),
+                                ),
+                                backgroundColor: Colors.green,
                               ),
                             );
                           },

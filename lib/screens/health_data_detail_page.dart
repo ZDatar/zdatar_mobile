@@ -77,7 +77,9 @@ class _HealthDataDetailPageState extends State<HealthDataDetailPage> {
                               });
                             },
                             activeColor: Colors.blue,
-                            activeTrackColor: Colors.blue.withValues(alpha: 0.3),
+                            activeTrackColor: Colors.blue.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                         ],
                       ),
@@ -132,8 +134,10 @@ class _HealthDataDetailPageState extends State<HealthDataDetailPage> {
                             // Handle manage sharing settings
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Sharing settings opened'),
-                                backgroundColor: Colors.blue,
+                                content: Center(
+                                  child: Text('Sharing settings opened'),
+                                ),
+                                backgroundColor: Colors.green,
                               ),
                             );
                           },
