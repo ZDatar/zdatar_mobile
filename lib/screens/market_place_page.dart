@@ -3,9 +3,7 @@ import 'deal_detail_page.dart';
 import '../theme/app_colors.dart';
 
 class MarketPlacePage extends StatelessWidget {
-  final Function(String, String, IconData)? onDealTap;
-
-  const MarketPlacePage({super.key, this.onDealTap});
+  const MarketPlacePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,24 +32,16 @@ class MarketPlacePage extends StatelessWidget {
                 icon: Icons.location_on,
                 detail: 'Detail',
                 onTap: () {
-                  if (onDealTap != null) {
-                    onDealTap!(
-                      'Urban Mobility Study',
-                      '\$1.35',
-                      Icons.location_on,
-                    );
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DealDetailPage(
-                          dealTitle: 'Urban Mobility Study',
-                          reward: '\$1.35',
-                          icon: Icons.location_on,
-                        ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DealDetailPage(
+                        dealTitle: 'Urban Mobility Study',
+                        reward: '\$1.35',
+                        icon: Icons.location_on,
                       ),
-                    );
-                  }
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 20),
@@ -62,20 +52,16 @@ class MarketPlacePage extends StatelessWidget {
                 icon: Icons.apps,
                 detail: 'Detail',
                 onTap: () {
-                  if (onDealTap != null) {
-                    onDealTap!('App Usage Trend', '\$0.80', Icons.apps);
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DealDetailPage(
-                          dealTitle: 'App Usage Trend',
-                          reward: '\$0.80',
-                          icon: Icons.apps,
-                        ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DealDetailPage(
+                        dealTitle: 'App Usage Trend',
+                        reward: '\$0.80',
+                        icon: Icons.apps,
                       ),
-                    );
-                  }
+                    ),
+                  );
                 },
               ),
             ],

@@ -20,9 +20,7 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: AppColors.lightCard,
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.mediumRadius,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.mediumRadius),
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.lightPrimary,
@@ -50,14 +48,8 @@ class AppTheme {
         fontSize: 16,
         fontWeight: FontWeight.w500,
       ),
-      bodyLarge: TextStyle(
-        color: AppColors.lightText,
-        fontSize: 16,
-      ),
-      bodyMedium: TextStyle(
-        color: AppColors.lightTextSecondary,
-        fontSize: 14,
-      ),
+      bodyLarge: TextStyle(color: AppColors.lightText, fontSize: 16),
+      bodyMedium: TextStyle(color: AppColors.lightTextSecondary, fontSize: 14),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: AppColors.lightSurface,
@@ -69,9 +61,7 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.lightPrimary,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.smallRadius,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.smallRadius),
       ),
     ),
   );
@@ -94,9 +84,7 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: AppColors.darkCard,
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.mediumRadius,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.mediumRadius),
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.darkPrimary,
@@ -124,14 +112,8 @@ class AppTheme {
         fontSize: 16,
         fontWeight: FontWeight.w500,
       ),
-      bodyLarge: TextStyle(
-        color: AppColors.darkText,
-        fontSize: 16,
-      ),
-      bodyMedium: TextStyle(
-        color: AppColors.darkTextSecondary,
-        fontSize: 14,
-      ),
+      bodyLarge: TextStyle(color: AppColors.darkText, fontSize: 16),
+      bodyMedium: TextStyle(color: AppColors.darkTextSecondary, fontSize: 14),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: AppColors.darkSurface,
@@ -143,9 +125,7 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.darkAccent,
         foregroundColor: AppColors.darkText,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.smallRadius,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.smallRadius),
         padding: const EdgeInsets.symmetric(vertical: 16),
       ),
     ),

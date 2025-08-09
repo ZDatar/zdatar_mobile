@@ -14,7 +14,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
 
   @override
   Widget build(BuildContext context) {
@@ -47,17 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
   bool showDetailPage = false;
   Map<String, dynamic>? currentDeal;
 
-  void showDealDetail(String dealTitle, String reward, IconData icon) {
-    setState(() {
-      showDetailPage = true;
-      currentDeal = {
-        'title': dealTitle,
-        'reward': reward,
-        'icon': icon,
-      };
-    });
-  }
-
   void hideDealDetail() {
     setState(() {
       showDetailPage = false;
@@ -69,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     Widget page;
     final theme = Theme.of(context);
-    
+
     if (showDetailPage && currentDeal != null) {
       // Show deal detail page
       page = DealDetailPage(
@@ -85,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
           page = MyDataPage();
           break;
         case 1:
-          page = MarketPlacePage(onDealTap: showDealDetail);
+          page = const MarketPlacePage();
           break;
         case 2:
           page = HomePage();
@@ -104,10 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
-          body: Container(
-            color: theme.colorScheme.primary,
-            child: page,
-          ),
+          body: Container(color: theme.colorScheme.primary, child: page),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: selectedIndex,
             onTap: (value) {

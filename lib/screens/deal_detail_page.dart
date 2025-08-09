@@ -30,13 +30,16 @@ class DealDetailPage extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: onBack ?? () => Navigator.pop(context),
-                    icon: Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Data deal',
                     style: theme.textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
+                      color: theme.colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -52,7 +55,11 @@ class DealDetailPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Icon(icon, color: Colors.tealAccent, size: 80),
+                            Icon(
+                              icon,
+                              color: theme.colorScheme.secondary,
+                              size: 80,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               dealTitle,
@@ -67,7 +74,7 @@ class DealDetailPage extends StatelessWidget {
                       Text(
                         'Description',
                         style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.tealAccent,
+                          color: theme.colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -75,21 +82,21 @@ class DealDetailPage extends StatelessWidget {
                       Text(
                         'Data collect: GPS, Temperature, Humidity, Vibration',
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Data will be collected during your travelling within the city',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 24),
                       Text(
                         'Terms',
                         style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.tealAccent,
+                          color: theme.colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -97,14 +104,14 @@ class DealDetailPage extends StatelessWidget {
                       Text(
                         'Only applicable within city limits and during active travel periods',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Outdoor environment required for accurate data collection',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -120,7 +127,7 @@ class DealDetailPage extends StatelessWidget {
                             // Handle accept deal
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Deal accepted!'),
+                                content: Center(child: Text('Deal accepted!')),
                                 backgroundColor: Colors.green,
                               ),
                             );
