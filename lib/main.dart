@@ -51,19 +51,19 @@ class _MyHomePageState extends State<MyHomePage> {
     // Show regular pages
     switch (selectedIndex) {
       case 0:
-        page = MyDataPage();
+        page = const MyDataPage();
         break;
       case 1:
         page = const MarketPlacePage();
         break;
       case 2:
-        page = HomePage();
+        page = const HomePage();
         break;
       case 3:
-        page = FavoritesPage(); // Placeholder for Wallet
+        page = const FavoritesPage(); // Placeholder for Wallet
         break;
       case 4:
-        page = FavoritesPage(); // Placeholder for Profile
+        page = const FavoritesPage(); // Placeholder for Profile
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
