@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zdatar_mobile/screens/wallet_page.dart';
 import 'models/app_state.dart';
 import 'screens/home_page.dart';
 import 'screens/favorites_page.dart';
@@ -60,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = const HomePage();
         break;
       case 3:
-        page = const FavoritesPage(); // Placeholder for Wallet
+        page = const WalletPage();
         break;
       case 4:
         page = const FavoritesPage(); // Placeholder for Profile
