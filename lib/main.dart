@@ -7,6 +7,7 @@ import 'screens/favorites_page.dart';
 import 'screens/my_data_page.dart';
 import 'screens/market_place_page.dart';
 import 'theme/app_theme.dart';
+import 'screens/profile_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -64,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = const WalletPage();
         break;
       case 4:
-        page = const FavoritesPage(); // Placeholder for Profile
+        page = const ProfilePage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
@@ -87,11 +88,11 @@ class _MyHomePageState extends State<MyHomePage> {
             type: BottomNavigationBarType.fixed,
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.dataset),
+                icon: Icon(Icons.analytics_rounded),
                 label: 'My Data',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.shop_2_rounded),
+                icon: Icon(Icons.shop_two_rounded),
                 label: 'Market',
               ),
               BottomNavigationBarItem(
@@ -99,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.wallet),
+                icon: Icon(Icons.account_balance_wallet_rounded),
                 label: 'Wallet',
               ),
               BottomNavigationBarItem(
