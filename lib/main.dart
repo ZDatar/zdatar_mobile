@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:zdatar_mobile/screens/wallet_page.dart';
 import 'models/app_state.dart';
 import 'screens/home_page.dart';
-import 'screens/favorites_page.dart';
 import 'screens/my_data_page.dart';
 import 'screens/market_place_page.dart';
 import 'theme/app_theme.dart';
 import 'screens/profile_page.dart';
+import 'screens/notification_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -95,7 +95,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   child: IconButton(
                     onPressed: () {
-                      _showNotificationDialog(context);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationPage(),
+                        ),
+                      );
                     },
                     icon: Stack(
                       children: [
@@ -177,7 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _showNotificationDialog(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -267,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Color iconColor,
   ) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -286,11 +290,7 @@ class _MyHomePageState extends State<MyHomePage> {
               color: iconColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 16,
-            ),
+            child: Icon(icon, color: iconColor, size: 16),
           ),
           const SizedBox(width: 12),
           Expanded(
