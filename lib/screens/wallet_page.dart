@@ -153,7 +153,7 @@ class WalletPage extends StatelessWidget {
                                   height: 1,
                                   width: double.infinity,
                                   color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 1,
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
@@ -225,7 +225,7 @@ class WalletPage extends StatelessWidget {
                                   height: 1,
                                   width: double.infinity,
                                   color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 1,
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
@@ -297,7 +297,7 @@ class WalletPage extends StatelessWidget {
                                   height: 1,
                                   width: double.infinity,
                                   color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 1,
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
@@ -371,7 +371,7 @@ class WalletPage extends StatelessWidget {
                                   height: 1,
                                   width: double.infinity,
                                   color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 1,
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
@@ -443,7 +443,7 @@ class WalletPage extends StatelessWidget {
                                   height: 1,
                                   width: double.infinity,
                                   color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 1,
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
@@ -515,7 +515,7 @@ class WalletPage extends StatelessWidget {
                                   height: 1,
                                   width: double.infinity,
                                   color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 1,
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
@@ -589,7 +589,7 @@ class WalletPage extends StatelessWidget {
                                   height: 1,
                                   width: double.infinity,
                                   color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 1,
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
@@ -661,7 +661,7 @@ class WalletPage extends StatelessWidget {
                                   height: 1,
                                   width: double.infinity,
                                   color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 1,
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
