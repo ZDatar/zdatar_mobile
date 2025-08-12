@@ -2,735 +2,166 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../app_icons.dart';
 
+// Data models
+class WalletBalance {
+  final String amount;
+  final String currency;
+  final String usdValue;
+
+  const WalletBalance({
+    required this.amount,
+    required this.currency,
+    required this.usdValue,
+  });
+}
+
+class Transaction {
+  final String title;
+  final String date;
+  final String amount;
+  final String currency;
+  final String usdValue;
+  final Widget icon;
+  final bool isPositive;
+
+  const Transaction({
+    required this.title,
+    required this.date,
+    required this.amount,
+    required this.currency,
+    required this.usdValue,
+    required this.icon,
+    required this.isPositive,
+  });
+}
+
 class WalletPage extends StatelessWidget {
   const WalletPage({super.key});
 
+  // Mock data - in a real app, this would come from a state management solution
+  static const _balance = WalletBalance(
+    amount: '12.08',
+    currency: 'ZDT',
+    usdValue: '\$45.00',
+  );
+
+  static final _transactions = [
+    Transaction(
+      title: 'Sent',
+      date: 'Today',
+      amount: '2.00',
+      currency: 'ZDT',
+      usdValue: '\$8.00',
+      icon: AppIcons.sent(),
+      isPositive: false,
+    ),
+    Transaction(
+      title: 'Received',
+      date: 'Today',
+      amount: '5.00',
+      currency: 'ZDT',
+      usdValue: '\$18.50',
+      icon: AppIcons.received(),
+      isPositive: true,
+    ),
+    Transaction(
+      title: 'Sent',
+      date: 'Yesterday',
+      amount: '1.50',
+      currency: 'ZDT',
+      usdValue: '\$5.55',
+      icon: AppIcons.sent(),
+      isPositive: false,
+    ),
+    Transaction(
+      title: 'Rewards',
+      date: 'Yesterday',
+      amount: '10.00',
+      currency: 'ZDT',
+      usdValue: '\$22.00',
+      icon: AppIcons.received(),
+      isPositive: true,
+    ),
+    Transaction(
+      title: 'Received',
+      date: 'Aug 12',
+      amount: '10.00',
+      currency: 'ZDT',
+      usdValue: '\$22.00',
+      icon: AppIcons.received(),
+      isPositive: true,
+    ),
+    Transaction(
+      title: 'Sent',
+      date: 'Aug 13',
+      amount: '10.00',
+      currency: 'ZDT',
+      usdValue: '\$22.00',
+      icon: AppIcons.sent(),
+      isPositive: false,
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.colorScheme.primary,
+      backgroundColor: Theme.of(context).colorScheme.primary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
+              _buildHeader(context),
+              const SizedBox(height: 16),
+              _buildBalanceCard(context),
+              const SizedBox(height: 16),
+              Expanded(child: _buildTransactionsCard(context)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    return Text(
+      'Wallet',
+      style: theme.textTheme.headlineMedium?.copyWith(
+        color: theme.colorScheme.onSurface,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Widget _buildBalanceCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.largeRadius),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                'Wallet',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: theme.colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
+                'Balance',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: Card(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.largeRadius,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 20,
-                      horizontal: 20,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Balance',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        Text('12.08 ZDT', style: theme.textTheme.headlineLarge),
-                        Text(
-                          '~\$45.00',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            color: theme.colorScheme.secondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              Text(
+                '${_balance.amount} ${_balance.currency}',
+                style: theme.textTheme.headlineLarge,
               ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: Card(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.largeRadius,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          'Transactions',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowUp(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Withdraw',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Today',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '- 10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(
-                                                  color: Colors.redAccent,
-                                                ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0,
-                                ),
-                                child: Container(
-                                  height: 1,
-                                  width: double.infinity,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowDown(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Rewards',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Yesterday',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(color: Colors.green),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0,
-                                ),
-                                child: Container(
-                                  height: 1,
-                                  width: double.infinity,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowDown(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Deposit',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Yesterday',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(color: Colors.green),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0,
-                                ),
-                                child: Container(
-                                  height: 1,
-                                  width: double.infinity,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowUp(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Withdraw',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Today',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '- 10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(
-                                                  color: Colors.redAccent,
-                                                ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0,
-                                ),
-                                child: Container(
-                                  height: 1,
-                                  width: double.infinity,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowDown(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Rewards',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Yesterday',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(color: Colors.green),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0,
-                                ),
-                                child: Container(
-                                  height: 1,
-                                  width: double.infinity,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowDown(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Rewards',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Yesterday',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(color: Colors.green),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0,
-                                ),
-                                child: Container(
-                                  height: 1,
-                                  width: double.infinity,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowUp(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Withdraw',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Today',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '- 10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(
-                                                  color: Colors.redAccent,
-                                                ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0,
-                                ),
-                                child: Container(
-                                  height: 1,
-                                  width: double.infinity,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowDown(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Rewards',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Yesterday',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(color: Colors.green),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0,
-                                ),
-                                child: Container(
-                                  height: 1,
-                                  width: double.infinity,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                borderRadius: AppRadius.largeRadius,
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      AppIcons.rotatedArrowDown(),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Rewards',
-                                              style: theme.textTheme.titleLarge
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'Yesterday',
-                                              style: theme.textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .secondary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            '10.00 ZDT',
-                                            style: theme.textTheme.titleLarge
-                                                ?.copyWith(color: Colors.green),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '~\$22.00',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                  color: theme
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              Text(
+                '~${_balance.usdValue}',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: theme.colorScheme.secondary,
                 ),
               ),
             ],
@@ -738,5 +169,122 @@ class WalletPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildTransactionsCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.largeRadius),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Transactions',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Expanded(child: _buildTransactionsList(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionsList(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: _transactions.asMap().entries.map((entry) {
+          final index = entry.key;
+          final transaction = entry.value;
+          return Column(
+            children: [
+              _buildTransactionItem(context, transaction),
+              if (index < _transactions.length - 1) _buildDivider(context),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(BuildContext context, Transaction transaction) {
+    final theme = Theme.of(context);
+    final amountColor = transaction.isPositive
+        ? Colors.green
+        : theme.colorScheme.error;
+    final amountPrefix = transaction.isPositive ? '+' : '-';
+
+    return InkWell(
+      borderRadius: AppRadius.largeRadius,
+      onTap: () => _onTransactionTap(transaction),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            transaction.icon,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    transaction.title,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    transaction.date,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$amountPrefix${transaction.amount} ${transaction.currency}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: amountColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '~${transaction.usdValue}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.secondary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        height: 1,
+        width: double.infinity,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+      ),
+    );
+  }
+
+  void _onTransactionTap(Transaction transaction) {
+    // Handle transaction tap - navigate to transaction details, etc.
+    debugPrint('Tapped on transaction: ${transaction.title}');
   }
 }
