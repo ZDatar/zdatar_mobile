@@ -13,6 +13,7 @@ class ProfilePage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
+            const SizedBox(height: 16),
             // Header with Profile title
             Padding(
               padding: const EdgeInsets.all(24.0),
