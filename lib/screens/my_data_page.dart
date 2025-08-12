@@ -104,14 +104,21 @@ class _MyDataPageState extends State<MyDataPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
+              Text(
+                'My Data',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
                     child: Text(
-                      'My Data',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                      'Granular, revocable consent per category',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.white70,
                       ),
                     ),
                   ),
@@ -122,14 +129,7 @@ class _MyDataPageState extends State<MyDataPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Granular, revocable consent per category',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -382,9 +382,11 @@ class _MyDataPageState extends State<MyDataPage> {
                   ? (value) {
                       setState(() {
                         subcategories[entry.key] = value;
-                        
+
                         // If all subcategories are disabled, disable the main category
-                        final allDisabled = subcategories.values.every((subValue) => !subValue);
+                        final allDisabled = subcategories.values.every(
+                          (subValue) => !subValue,
+                        );
                         if (allDisabled) {
                           _dataCategories[category]!['enabled'] = false;
                         }
