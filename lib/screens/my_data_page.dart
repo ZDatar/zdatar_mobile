@@ -382,6 +382,16 @@ class _MyDataPageState extends State<MyDataPage> {
                   ? (value) {
                       setState(() {
                         subcategories[entry.key] = value;
+                        
+                        // If all subcategories are disabled, disable the main category
+                        final allDisabled = subcategories.values.every((subValue) => !subValue);
+                        if (allDisabled) {
+                          _dataCategories[category]!['enabled'] = false;
+                        }
+                        // If at least one subcategory is enabled, ensure main category is enabled
+                        else if (value) {
+                          _dataCategories[category]!['enabled'] = true;
+                        }
                       });
                     }
                   : null,
