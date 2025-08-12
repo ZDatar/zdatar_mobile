@@ -214,66 +214,6 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavigationBar(BuildContext context, ThemeData theme) {
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.1),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildNavItem(context, Icons.analytics_outlined, 'Data', false),
-          _buildNavItem(context, Icons.shopping_bag_outlined, 'Market', false),
-          _buildNavItem(context, Icons.home_outlined, 'Home', false),
-          _buildNavItem(
-            context,
-            Icons.account_balance_wallet_outlined,
-            'Wallet',
-            false,
-          ),
-          _buildNavItem(context, Icons.person, 'Profile', true),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    BuildContext context,
-    IconData icon,
-    String label,
-    bool isSelected,
-  ) {
-    final theme = Theme.of(context);
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          color: isSelected
-              ? theme.colorScheme.secondary
-              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          size: 24,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: isSelected
-                ? theme.colorScheme.secondary
-                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
   void _showLogOutDialog(BuildContext context) {
     final theme = Theme.of(context);
 
