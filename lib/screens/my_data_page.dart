@@ -227,15 +227,13 @@ class _MyDataPageState extends State<MyDataPage> {
                             onChanged: (value) {
                               setState(() {
                                 _dataCategories[category]!['enabled'] = value;
-                                // If disabling main category, disable all subcategories
-                                if (!value) {
-                                  final subcategories =
-                                      _dataCategories[category]!['subcategories']
-                                          as Map<String, bool>;
-                                  subcategories.updateAll(
-                                    (key, value) => false,
-                                  );
-                                }
+                                // When enabling/disabling main category, enable/disable all subcategories
+                                final subcategories =
+                                    _dataCategories[category]!['subcategories']
+                                        as Map<String, bool>;
+                                subcategories.updateAll(
+                                  (key, subValue) => value,
+                                );
                               });
                             },
                             activeColor: Colors.green,
