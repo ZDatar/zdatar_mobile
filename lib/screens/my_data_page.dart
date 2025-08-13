@@ -130,38 +130,45 @@ class _MyDataPageState extends State<MyDataPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pauseAllDataCollection,
-                      icon: const Icon(Icons.pause),
-                      label: const Text('Pause All'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _deleteAllData,
-                      icon: const Icon(Icons.delete_forever),
-                      label: const Text('Delete All'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
               Expanded(
                 child: ListView.builder(
-                  itemCount: _dataCategories.length,
+                  itemCount:
+                      _dataCategories.length + 1, // +1 for the buttons section
                   itemBuilder: (context, index) {
+                    // If this is the last item, show the buttons
+                    if (index == _dataCategories.length) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 24, bottom: 16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _pauseAllDataCollection,
+                                icon: const Icon(Icons.pause),
+                                label: const Text('Pause All'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _deleteAllData,
+                                icon: const Icon(Icons.delete_forever),
+                                label: const Text('Delete All'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
                     final category = _dataCategories.keys.elementAt(index);
                     final categoryData = _dataCategories[category]!;
                     final isEnabled = categoryData['enabled'] as bool;
