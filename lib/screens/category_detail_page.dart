@@ -85,12 +85,13 @@ class CategoryDetailPage extends StatelessWidget {
                                     const SizedBox(width: 6),
                                     Text(
                                       isEnabled ? 'Active' : 'Paused',
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: isEnabled
-                                            ? Colors.green
-                                            : Colors.grey,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: isEnabled
+                                                ? Colors.green
+                                                : Colors.grey,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -110,9 +111,9 @@ class CategoryDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Data Collection Details
               Expanded(
                 child: SingleChildScrollView(
@@ -127,7 +128,7 @@ class CategoryDetailPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Use Case
                       _buildDetailCard(
                         'Use Case',
@@ -135,9 +136,9 @@ class CategoryDetailPage extends StatelessWidget {
                         Icons.lightbulb_outline,
                         theme,
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
+
                       // Data Retention
                       _buildDetailCard(
                         'Data Retention',
@@ -145,9 +146,9 @@ class CategoryDetailPage extends StatelessWidget {
                         Icons.schedule,
                         theme,
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Subcategories
                       Text(
                         'Data Subcategories',
@@ -157,22 +158,22 @@ class CategoryDetailPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      
+
                       ...subcategories.entries.map((entry) {
                         return _buildSubcategoryCard(
                           entry.key,
                           entry.value,
                           theme,
                         );
-                      }).toList(),
-                      
+                      }),
+
                       const SizedBox(height: 24),
-                      
+
                       // Privacy Information
                       _buildPrivacyCard(theme),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Action Buttons
                       Row(
                         children: [
@@ -184,7 +185,9 @@ class CategoryDetailPage extends StatelessWidget {
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.orange,
                                 side: const BorderSide(color: Colors.orange),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                             ),
                           ),
@@ -197,7 +200,9 @@ class CategoryDetailPage extends StatelessWidget {
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.red,
                                 side: const BorderSide(color: Colors.red),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                             ),
                           ),
@@ -214,22 +219,21 @@ class CategoryDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailCard(String title, String content, IconData icon, ThemeData theme) {
+  Widget _buildDetailCard(
+    String title,
+    String content,
+    IconData icon,
+    ThemeData theme,
+  ) {
     return Card(
       color: Colors.white.withValues(alpha: 0.05),
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.mediumRadius,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.mediumRadius),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: Colors.white70,
-              size: 20,
-            ),
+            Icon(icon, color: Colors.white70, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -263,9 +267,7 @@ class CategoryDetailPage extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Card(
         color: Colors.white.withValues(alpha: 0.05),
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.smallRadius,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.smallRadius),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
@@ -301,9 +303,7 @@ class CategoryDetailPage extends StatelessWidget {
   Widget _buildPrivacyCard(ThemeData theme) {
     return Card(
       color: Colors.white.withValues(alpha: 0.05),
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.mediumRadius,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.mediumRadius),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -311,11 +311,7 @@ class CategoryDetailPage extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
-                  Icons.security,
-                  color: Colors.green,
-                  size: 20,
-                ),
+                const Icon(Icons.security, color: Colors.green, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Privacy Protection',
@@ -332,9 +328,7 @@ class CategoryDetailPage extends StatelessWidget {
               '• Only aggregated insights shared\n'
               '• No personal identifiable information collected\n'
               '• You can pause or delete anytime',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white70,
-              ),
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
             ),
           ],
         ),

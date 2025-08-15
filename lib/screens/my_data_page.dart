@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'category_detail_page.dart';
+import '../services/data_collection_service.dart';
 
 class MyDataPage extends StatefulWidget {
   const MyDataPage({super.key});
@@ -10,10 +11,11 @@ class MyDataPage extends StatefulWidget {
 }
 
 class _MyDataPageState extends State<MyDataPage> {
+  final DataCollectionService _dataCollectionService = DataCollectionService();
   // Data collection categories with granular consent
   final Map<String, Map<String, dynamic>> _dataCategories = {
     'Core Device & Session': {
-      'enabled': true,
+      'enabled': false,
       'description': 'Device profile, power, network, storage & performance',
       'subcategories': {
         'Device Profile': true,
@@ -80,7 +82,7 @@ class _MyDataPageState extends State<MyDataPage> {
       'icon': Icons.home_work,
     },
     'Developer & QA': {
-      'enabled': true,
+      'enabled': false,
       'description':
           'Sensor availability, permissions, data quality indicators',
       'subcategories': {
@@ -242,6 +244,19 @@ class _MyDataPageState extends State<MyDataPage> {
                                 subcategories.updateAll(
                                   (key, subValue) => value,
                                 );
+
+                                // Start/stop data collection based on category state
+                                if (value) {
+                                  _dataCollectionService
+                                      .startCategoryCollection(
+                                        category,
+                                        subcategories,
+                                      );
+                                } else {
+                                  _dataCollectionService.stopCategoryCollection(
+                                    category,
+                                  );
+                                }
                               });
                             },
                             activeColor: Colors.green,
@@ -400,11 +415,20 @@ class _MyDataPageState extends State<MyDataPage> {
                         );
                         if (allDisabled) {
                           _dataCategories[category]!['enabled'] = false;
+                          _dataCollectionService.stopCategoryCollection(
+                            category,
+                          );
                         }
                         // If at least one subcategory is enabled, ensure main category is enabled
                         else if (value) {
                           _dataCategories[category]!['enabled'] = true;
                         }
+
+                        // Update data collection based on current subcategory states
+                        _dataCollectionService.startCategoryCollection(
+                          category,
+                          subcategories,
+                        );
                       });
                     }
                   : null,
@@ -464,6 +488,9 @@ class _MyDataPageState extends State<MyDataPage> {
         final subcategories =
             _dataCategories[category]!['subcategories'] as Map<String, bool>;
         subcategories.updateAll((key, value) => false);
+
+        // Stop data collection for all categories
+        _dataCollectionService.stopCategoryCollection(category);
       }
     });
     ScaffoldMessenger.of(context).showSnackBar(
@@ -491,6 +518,12 @@ class _MyDataPageState extends State<MyDataPage> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
+
+              // Stop all data collection and clear data
+              for (final category in _dataCategories.keys) {
+                _dataCollectionService.stopCategoryCollection(category);
+              }
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('All data deleted successfully'),
@@ -504,8 +537,6 @@ class _MyDataPageState extends State<MyDataPage> {
       ),
     );
   }
-
-
 
   void _navigateToDetail(
     BuildContext context,
@@ -539,6 +570,10 @@ class _MyDataPageState extends State<MyDataPage> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
+
+              // Stop data collection for this category
+              _dataCollectionService.stopCategoryCollection(category);
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('$category data deleted successfully'),
@@ -551,5 +586,11 @@ class _MyDataPageState extends State<MyDataPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _dataCollectionService.dispose();
+    super.dispose();
   }
 }
