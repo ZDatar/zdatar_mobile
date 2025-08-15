@@ -27,7 +27,7 @@ class DataCollectionService {
     String category,
     Map<String, bool> subcategories,
   ) {
-    _logger.i('Starting data collection for category: $category');
+    _logger.i('🔄 Starting data collection for category: $category');
 
     // Stop existing collection for this category
     stopCategoryCollection(category);
@@ -41,7 +41,7 @@ class DataCollectionService {
   }
 
   void stopCategoryCollection(String category) {
-    _logger.i('Stopping data collection for category: $category');
+    _logger.i('⏹️ Stopping data collection for category: $category');
 
     // Stop all timers for this category
     _activeCollectors.keys
@@ -58,7 +58,7 @@ class DataCollectionService {
 
   void _startSubcategoryCollection(String category, String subcategory) {
     final key = '$category:$subcategory';
-    _logger.d('Starting collection for: $subcategory in $category');
+    _logger.i('▶️ Starting collection for: $subcategory in $category');
 
     // Create a timer that collects data every 5 seconds
     _activeCollectors[key] = Timer.periodic(const Duration(seconds: 5), (
@@ -67,7 +67,7 @@ class DataCollectionService {
       final data = _generateMockData(category, subcategory);
       _collectedData[key] = data;
 
-      _logger.d('[$category] $subcategory: ${_formatDataForConsole(data)}');
+      _logger.d('📊 [$category] $subcategory: ${_formatDataForConsole(data)}');
     });
 
     // Collect initial data immediately

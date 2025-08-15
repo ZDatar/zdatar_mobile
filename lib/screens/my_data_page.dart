@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'category_detail_page.dart';
-import '../services/data_collection_service.dart';
+import '../services/real_data_collection_service.dart';
 
 class MyDataPage extends StatefulWidget {
   const MyDataPage({super.key});
@@ -11,7 +11,7 @@ class MyDataPage extends StatefulWidget {
 }
 
 class _MyDataPageState extends State<MyDataPage> {
-  final DataCollectionService _dataCollectionService = DataCollectionService();
+  final RealDataCollectionService _dataCollectionService = RealDataCollectionService();
   // Data collection categories with granular consent
   final Map<String, Map<String, dynamic>> _dataCategories = {
     'Core Device & Session': {
