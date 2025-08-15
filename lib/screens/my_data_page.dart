@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'category_detail_page.dart';
 
 class MyDataPage extends StatefulWidget {
   const MyDataPage({super.key});
@@ -290,17 +291,20 @@ class _MyDataPageState extends State<MyDataPage> {
                                     children: [
                                       Expanded(
                                         child: OutlinedButton.icon(
-                                          onPressed: () =>
-                                              _pauseCategory(category),
+                                          onPressed: () => _navigateToDetail(
+                                            context,
+                                            category,
+                                            categoryData,
+                                          ),
                                           icon: const Icon(
-                                            Icons.pause,
+                                            Icons.info_outline,
                                             size: 16,
                                           ),
-                                          label: const Text('Pause'),
+                                          label: const Text('View Details'),
                                           style: OutlinedButton.styleFrom(
-                                            foregroundColor: Colors.orange,
+                                            foregroundColor: Colors.blue,
                                             side: const BorderSide(
-                                              color: Colors.orange,
+                                              color: Colors.blue,
                                             ),
                                           ),
                                         ),
@@ -501,17 +505,19 @@ class _MyDataPageState extends State<MyDataPage> {
     );
   }
 
-  void _pauseCategory(String category) {
-    setState(() {
-      _dataCategories[category]!['enabled'] = false;
-      final subcategories =
-          _dataCategories[category]!['subcategories'] as Map<String, bool>;
-      subcategories.updateAll((key, value) => false);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$category data collection paused'),
-        backgroundColor: Colors.orange,
+
+
+  void _navigateToDetail(
+    BuildContext context,
+    String category,
+    Map<String, dynamic> categoryData,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CategoryDetailPage(
+          categoryName: category,
+          categoryData: categoryData,
+        ),
       ),
     );
   }
