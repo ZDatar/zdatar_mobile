@@ -252,6 +252,7 @@ class RealDataCollectionService {
     String subcategory,
     DateTime timestamp,
   ) async {
+    _logger.d('Mobility subcategory: "$subcategory" (length: ${subcategory.length})');
     switch (subcategory) {
       case 'Location (Coarse)':
         final hasPermission = await _checkLocationPermission();
@@ -339,6 +340,43 @@ class RealDataCollectionService {
             'note': 'Sensor streams initializing, data will be available shortly',
           };
         }
+
+      case 'Barometer & Magnetometer':
+        // Wait a short time for sensor data if streams are active but no data yet
+        if (_latestMagnetometer == null && 
+            _magnetometerSubscription != null) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
+        return {
+          'timestamp': timestamp.toIso8601String(),
+          'magnetometer_x': _latestMagnetometer?.x ?? 0.0,
+          'magnetometer_y': _latestMagnetometer?.y ?? 0.0,
+          'magnetometer_z': _latestMagnetometer?.z ?? 0.0,
+          'magnetometer_available': _latestMagnetometer != null,
+          'streams_active': _magnetometerSubscription != null,
+          'note': 'Barometer data requires additional platform-specific implementation',
+        };
+    }
+    
+    // Handle potential character encoding issues or variations
+    if (subcategory.contains('Barometer') && subcategory.contains('Magnetometer')) {
+      _logger.d('Matched Barometer & Magnetometer via contains check');
+      // Wait a short time for sensor data if streams are active but no data yet
+      if (_latestMagnetometer == null && 
+          _magnetometerSubscription != null) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      
+      return {
+        'timestamp': timestamp.toIso8601String(),
+        'magnetometer_x': _latestMagnetometer?.x ?? 0.0,
+        'magnetometer_y': _latestMagnetometer?.y ?? 0.0,
+        'magnetometer_z': _latestMagnetometer?.z ?? 0.0,
+        'magnetometer_available': _latestMagnetometer != null,
+        'streams_active': _magnetometerSubscription != null,
+        'note': 'Barometer data requires additional platform-specific implementation',
+      };
     }
 
     return {
