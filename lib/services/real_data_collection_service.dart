@@ -6,7 +6,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:network_info_plus/network_info_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:logger/logger.dart';
 
@@ -255,13 +254,16 @@ class RealDataCollectionService {
     _logger.d('Mobility subcategory: "$subcategory" (length: ${subcategory.length})');
     switch (subcategory) {
       case 'Location (Coarse)':
+        _logger.i('Checking location permission for coarse location...');
         final hasPermission = await _checkLocationPermission();
         if (!hasPermission) {
+          _logger.w('Location permission check failed for coarse location');
           return {
             'timestamp': timestamp.toIso8601String(),
             'error': 'Location permission not granted',
           };
         }
+        _logger.i('Location permission granted for coarse location');
 
         try {
           final position = await Geolocator.getCurrentPosition(
@@ -283,13 +285,16 @@ class RealDataCollectionService {
         }
 
       case 'Location (Fine)':
+        _logger.i('Checking location permission for fine location...');
         final hasPermission = await _checkLocationPermission();
         if (!hasPermission) {
+          _logger.w('Location permission check failed for fine location');
           return {
             'timestamp': timestamp.toIso8601String(),
             'error': 'Location permission not granted',
           };
         }
+        _logger.i('Location permission granted for fine location');
 
         try {
           final position = await Geolocator.getCurrentPosition(
@@ -479,8 +484,53 @@ class RealDataCollectionService {
   }
 
   Future<bool> _checkLocationPermission() async {
-    final permission = await Permission.location.status;
-    return permission == PermissionStatus.granted;
+    _logger.d('Starting location permission check...');
+    
+    // First check if location services are enabled
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    _logger.d('Location services enabled: $serviceEnabled');
+    if (!serviceEnabled) {
+      _logger.w('Location services are disabled');
+      return false;
+    }
+
+    // Check current permission status using Geolocator
+    LocationPermission permission = await Geolocator.checkPermission();
+    _logger.d('Current location permission status: $permission');
+    
+    if (permission == LocationPermission.always || 
+        permission == LocationPermission.whileInUse) {
+      _logger.d('Location permission already granted');
+      return true;
+    }
+    
+    // If permission is denied, try to request it
+    if (permission == LocationPermission.denied) {
+      _logger.i('Location permission denied, requesting permission...');
+      try {
+        permission = await Geolocator.requestPermission();
+        _logger.d('Permission request result: $permission');
+        
+        if (permission == LocationPermission.always || 
+            permission == LocationPermission.whileInUse) {
+          _logger.i('Location permission granted after request');
+          return true;
+        } else {
+          _logger.w('Location permission request was denied by user: $permission');
+        }
+      } catch (e) {
+        _logger.e('Error requesting location permission: $e');
+      }
+    }
+    
+    // If permanently denied, we can't request again
+    if (permission == LocationPermission.deniedForever) {
+      _logger.w('Location permission permanently denied. User needs to enable it in settings.');
+      return false;
+    }
+    
+    _logger.w('Location permission check failed. Final status: $permission');
+    return false;
   }
 
   String _formatDataForConsole(Map<String, dynamic> data) {

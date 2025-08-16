@@ -11,7 +11,8 @@ class MyDataPage extends StatefulWidget {
 }
 
 class _MyDataPageState extends State<MyDataPage> {
-  final RealDataCollectionService _dataCollectionService = RealDataCollectionService();
+  final RealDataCollectionService _dataCollectionService =
+      RealDataCollectionService();
   // Data collection categories with granular consent
   final Map<String, Map<String, dynamic>> _dataCategories = {
     'Core Device & Session': {
@@ -114,7 +115,6 @@ class _MyDataPageState extends State<MyDataPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -132,7 +132,7 @@ class _MyDataPageState extends State<MyDataPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              // const SizedBox(height: 8),
               Expanded(
                 child: ListView.builder(
                   itemCount:

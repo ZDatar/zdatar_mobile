@@ -35,14 +35,33 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-android/
+android/app/build/
+android/build/
+android/.gradle/
+android/gradle/
+android/gradlew*
+android/local.properties
+android/key.properties
+
+# Keep essential Android config files
+!android/app/src/main/AndroidManifest.xml
 
 # Flutter/Dart
 .packages
 coverage/
 
-# iOS
-ios/
+# iOS build artifacts
+ios/build/
+ios/Pods/
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+ios/Runner.xcodeproj/xcuserdata/
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# Keep essential iOS config files
+!ios/Runner/Info.plist
 
 # macOS
 macos/
