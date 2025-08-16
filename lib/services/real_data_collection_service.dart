@@ -266,9 +266,10 @@ class RealDataCollectionService {
         _logger.i('Location permission granted for coarse location');
 
         try {
+          // Try to get current position first
           final position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.low,
-            timeLimit: const Duration(seconds: 5),
+            timeLimit: const Duration(seconds: 15),
           );
           return {
             'timestamp': timestamp.toIso8601String(),
@@ -278,9 +279,29 @@ class RealDataCollectionService {
             'accuracy_meters': position.accuracy,
           };
         } catch (e) {
+          _logger.w('Failed to get current position, trying last known position: $e');
+          
+          // Fallback to last known position if current position fails
+          try {
+            final lastPosition = await Geolocator.getLastKnownPosition();
+            if (lastPosition != null) {
+              return {
+                'timestamp': timestamp.toIso8601String(),
+                'latitude_coarse':
+                    (lastPosition.latitude * 100).round() / 100,
+                'longitude_coarse': (lastPosition.longitude * 100).round() / 100,
+                'accuracy_meters': lastPosition.accuracy,
+                'note': 'Using last known position due to GPS timeout',
+              };
+            }
+          } catch (lastPosError) {
+            _logger.w('Failed to get last known position: $lastPosError');
+          }
+          
           return {
             'timestamp': timestamp.toIso8601String(),
             'error': 'Failed to get location: $e',
+            'suggestion': 'Ensure GPS is enabled and try moving to an area with better signal',
           };
         }
 
@@ -297,9 +318,10 @@ class RealDataCollectionService {
         _logger.i('Location permission granted for fine location');
 
         try {
+          // Try to get current position first
           final position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high,
-            timeLimit: const Duration(seconds: 10),
+            timeLimit: const Duration(seconds: 20),
           );
           return {
             'timestamp': timestamp.toIso8601String(),
@@ -311,9 +333,31 @@ class RealDataCollectionService {
             'heading': position.heading,
           };
         } catch (e) {
+          _logger.w('Failed to get current precise position, trying last known position: $e');
+          
+          // Fallback to last known position if current position fails
+          try {
+            final lastPosition = await Geolocator.getLastKnownPosition();
+            if (lastPosition != null) {
+              return {
+                'timestamp': timestamp.toIso8601String(),
+                'latitude': lastPosition.latitude,
+                'longitude': lastPosition.longitude,
+                'altitude': lastPosition.altitude,
+                'accuracy_meters': lastPosition.accuracy,
+                'speed': lastPosition.speed,
+                'heading': lastPosition.heading,
+                'note': 'Using last known position due to GPS timeout',
+              };
+            }
+          } catch (lastPosError) {
+            _logger.w('Failed to get last known precise position: $lastPosError');
+          }
+          
           return {
             'timestamp': timestamp.toIso8601String(),
             'error': 'Failed to get precise location: $e',
+            'suggestion': 'Ensure GPS is enabled and try moving to an area with better signal',
           };
         }
 
