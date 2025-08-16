@@ -357,8 +357,18 @@ class RealDataCollectionService {
           'streams_active': _magnetometerSubscription != null,
           'note': 'Barometer data requires additional platform-specific implementation',
         };
+
+      case 'Proximity Scans':
+        return {
+          'timestamp': timestamp.toIso8601String(),
+          'proximity_available': false,
+          'bluetooth_scan_count': 0,
+          'wifi_scan_count': 0,
+          'note': 'Proximity scanning requires additional permissions and platform-specific implementation for Bluetooth/WiFi discovery',
+          'status': 'not_implemented',
+        };
     }
-    
+
     // Handle potential character encoding issues or variations
     if (subcategory.contains('Barometer') && subcategory.contains('Magnetometer')) {
       _logger.d('Matched Barometer & Magnetometer via contains check');
