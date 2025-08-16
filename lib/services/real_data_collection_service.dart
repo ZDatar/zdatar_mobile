@@ -312,6 +312,12 @@ class RealDataCollectionService {
         }
 
       case 'Motion Sensors':
+        // Wait a short time for sensor data if streams are active but no data yet
+        if (_latestAccelerometer == null && 
+            _accelerometerSubscription != null) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        
         if (_latestAccelerometer != null) {
           return {
             'timestamp': timestamp.toIso8601String(),
@@ -328,7 +334,9 @@ class RealDataCollectionService {
         } else {
           return {
             'timestamp': timestamp.toIso8601String(),
-            'error': 'No sensor data available',
+            'status': 'waiting_for_sensor_data',
+            'streams_active': _accelerometerSubscription != null,
+            'note': 'Sensor streams initializing, data will be available shortly',
           };
         }
     }
@@ -430,9 +438,9 @@ class RealDataCollectionService {
   String _formatDataForConsole(Map<String, dynamic> data) {
     final buffer = StringBuffer();
     data.forEach((key, value) {
-      if (key != 'timestamp') {
-        buffer.write('$key: $value, ');
-      }
+      // if (key != 'timestamp') {
+      buffer.write('$key: $value, ');
+      // }
     });
     return buffer.toString().replaceAll(RegExp(r', $'), '');
   }
