@@ -1,6 +1,6 @@
 # ZDatar Mobile App
 
-ZDatar Mobile is the official Flutter app for the ZDatar ecosystem, focused on privacy-preserving data collection, blockchain integration, and user monetization.
+ZDatar is the official Flutter app for the ZDatar ecosystem, focused on privacy-preserving data collection, blockchain integration, and user monetization.
 
 ## Project Overview
 
@@ -8,7 +8,7 @@ ZDatar is a decentralized data platform that empowers users to collect, own, and
 
 ### System Architecture
 
-- **Mobile App (ZDatar Mobile):**
+- **Mobile App (ZDatar):**
   - Collects data (motion, location, environment, etc.)
   - Encrypts data client-side before upload
   - Connects with Web3 wallets (MetaMask, WalletConnect)
