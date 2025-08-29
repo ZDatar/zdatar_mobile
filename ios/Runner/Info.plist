@@ -49,5 +49,9 @@
 	<string>This app needs location access to collect mobility and environmental data for analysis.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs location access to collect mobility and environmental data for analysis.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This app uses Bluetooth to scan for nearby devices for proximity analysis and environmental data collection.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>This app uses Bluetooth to scan for nearby devices for proximity analysis and environmental data collection.</string>
 </dict>
 </plist>

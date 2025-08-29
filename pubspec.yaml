@@ -49,6 +49,10 @@ dependencies:
   network_info_plus: ^5.0.0
   permission_handler: ^11.3.1
   package_info_plus: ^8.0.0
+  
+  # Proximity scanning packages
+  flutter_blue_plus: ^1.35.5
+  wifi_scan: ^0.4.1+2
 
 dev_dependencies:
   flutter_test:
