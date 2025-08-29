@@ -146,11 +146,19 @@ class _MyDataPageState extends State<MyDataPage> {
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: _pauseAllDataCollection,
-                                icon: const Icon(Icons.pause),
-                                label: const Text('Pause All'),
+                                onPressed: _hasAnyEnabledCategory() 
+                                    ? _pauseAllDataCollection 
+                                    : _enableAllDataCollection,
+                                icon: Icon(_hasAnyEnabledCategory() 
+                                    ? Icons.pause 
+                                    : Icons.play_arrow),
+                                label: Text(_hasAnyEnabledCategory() 
+                                    ? 'Pause All' 
+                                    : 'Enable All'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
+                                  backgroundColor: _hasAnyEnabledCategory() 
+                                      ? Colors.orange 
+                                      : Colors.green,
                                   foregroundColor: Colors.white,
                                 ),
                               ),
@@ -477,6 +485,30 @@ class _MyDataPageState extends State<MyDataPage> {
             child: const Text('Got it'),
           ),
         ],
+      ),
+    );
+  }
+
+  bool _hasAnyEnabledCategory() {
+    return _dataCategories.values.any((category) => category['enabled'] as bool);
+  }
+
+  void _enableAllDataCollection() {
+    setState(() {
+      for (final category in _dataCategories.keys) {
+        _dataCategories[category]!['enabled'] = true;
+        final subcategories =
+            _dataCategories[category]!['subcategories'] as Map<String, bool>;
+        subcategories.updateAll((key, value) => true);
+
+        // Start data collection for all categories
+        _dataCollectionService.startCategoryCollection(category, subcategories);
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('All data collection enabled'),
+        backgroundColor: Colors.green,
       ),
     );
   }
