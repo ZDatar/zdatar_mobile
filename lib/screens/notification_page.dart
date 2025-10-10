@@ -35,23 +35,34 @@ class NotificationPage extends StatelessWidget {
                     size: 28,
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    'Notifications',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: theme.colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      'Notifications',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      _markAllAsRead(context);
-                    },
-                    child: Text(
-                      'Mark all read',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.secondary,
-                        fontWeight: FontWeight.w500,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: TextButton(
+                      onPressed: () {
+                        _markAllAsRead(context);
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Mark all read',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.secondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
