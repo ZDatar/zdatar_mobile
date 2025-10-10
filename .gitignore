@@ -40,7 +40,6 @@ android/build/
 android/.gradle/
 android/gradle/
 android/gradlew*
-android/local.properties
 android/key.properties
 
 # Keep essential Android config files

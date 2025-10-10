@@ -45,14 +45,17 @@ dependencies:
   connectivity_plus: ^6.0.1
   geolocator: ^12.0.0
   sensors_plus: ^5.0.1
-  app_usage: ^3.0.0
+  app_usage: ^4.0.1
   network_info_plus: ^5.0.0
   permission_handler: ^11.3.1
   package_info_plus: ^8.0.0
   
-  # Proximity scanning packages
-  flutter_blue_plus: ^1.35.5
-  wifi_scan: ^0.4.1+2
+  # Proximity scanning
+  flutter_blue_plus: ^1.32.12
+  wifi_scan: ^0.4.1
+  
+  # Health data collection
+  health: ^13.1.3
 
 dev_dependencies:
   flutter_test:
