@@ -52,7 +52,10 @@ class NotificationPage extends StatelessWidget {
                         _markAllAsRead(context);
                       },
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -84,7 +87,7 @@ class NotificationPage extends StatelessWidget {
                     _buildNotificationItem(
                       context,
                       'New reward earned!',
-                      'You earned 5.00 ZDT from data sharing. Keep up the great work!',
+                      'You earned 0.2 SOL from data sharing. Keep up the great work!',
                       '2 min ago',
                       Icons.monetization_on,
                       Colors.green,
@@ -94,7 +97,7 @@ class NotificationPage extends StatelessWidget {
                     _buildNotificationItem(
                       context,
                       'Market update',
-                      'ZDT price increased by 12% in the last 24 hours. Current price: \$2.24',
+                      'SOL price increased by 12% in the last 24 hours. Current price: \$122.24',
                       '1 hour ago',
                       Icons.trending_up,
                       Colors.blue,
@@ -124,7 +127,7 @@ class NotificationPage extends StatelessWidget {
                     _buildNotificationItem(
                       context,
                       'Weekly summary',
-                      'You earned 45.50 ZDT this week from various data sharing activities.',
+                      'You earned 1.50 SOL this week from various data sharing activities.',
                       '2 days ago',
                       Icons.analytics,
                       Colors.purple,
@@ -192,11 +195,7 @@ class NotificationPage extends StatelessWidget {
                 color: iconColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 20,
-              ),
+              child: Icon(icon, color: iconColor, size: 20),
             ),
             const SizedBox(width: 16),
             // Content
@@ -211,7 +210,9 @@ class NotificationPage extends StatelessWidget {
                           title,
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: theme.colorScheme.onSurface,
-                            fontWeight: isUnread ? FontWeight.w600 : FontWeight.w500,
+                            fontWeight: isUnread
+                                ? FontWeight.w600
+                                : FontWeight.w500,
                           ),
                         ),
                       ),
@@ -254,7 +255,7 @@ class NotificationPage extends StatelessWidget {
 
   void _markAllAsRead(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -263,16 +264,14 @@ class NotificationPage extends StatelessWidget {
         ),
         backgroundColor: theme.colorScheme.surface,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
 
   void _handleNotificationTap(BuildContext context, String title) {
     final theme = Theme.of(context);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -281,9 +280,7 @@ class NotificationPage extends StatelessWidget {
         ),
         backgroundColor: theme.colorScheme.surface,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         duration: const Duration(seconds: 2),
       ),
     );
