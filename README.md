@@ -38,6 +38,7 @@ ZDatar is a decentralized data platform that empowers users to collect, own, and
   - Token-gated access policies (ZDATA token)
 
 ### Security Considerations
+
 - All data is encrypted on the client before upload
 - Smart contracts are audited
 - Role-based access for buyer portals
@@ -46,29 +47,37 @@ ZDatar is a decentralized data platform that empowers users to collect, own, and
 ## Getting Started
 
 ### Prerequisites
+
 - [Flutter SDK](https://docs.flutter.dev/get-started/install)
 - Dart
 - Android Studio or Xcode (for iOS)
 
 ### Setup
+
 1. Clone this repository or copy the `zdatar_mobile` folder.
 2. Install dependencies:
+
    ```sh
    flutter pub get
    ```
+
 3. Run the app:
+
    ```sh
    flutter run
    ```
 
 ### Folder Structure
+
 - `lib/` — Main Flutter app code
 - `android/`, `ios/` — Platform-specific code
 
 ## Contributing
+
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
+
 This project is licensed under a proprietary End User License Agreement (EULA). See the [LICENSE](LICENSE) file for details.
 
 **Important**: This is a closed-source application. Users are granted rights to use the app only. Redistribution, modification, and reverse engineering are strictly prohibited.
