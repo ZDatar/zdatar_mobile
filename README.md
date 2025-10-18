@@ -69,4 +69,6 @@ ZDatar is a decentralized data platform that empowers users to collect, own, and
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
-[MIT](../LICENSE)
+This project is licensed under a proprietary End User License Agreement (EULA). See the [LICENSE](LICENSE) file for details.
+
+**Important**: This is a closed-source application. Users are granted rights to use the app only. Redistribution, modification, and reverse engineering are strictly prohibited.
