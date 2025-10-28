@@ -19,10 +19,10 @@ class _MyDataPageState extends State<MyDataPage> {
       'enabled': false,
       'description': 'Device profile, power, network, storage & performance',
       'subcategories': {
-        'Device Profile': true,
-        'Power & Thermal': true,
-        'Network State': true,
-        'Storage & Performance': true,
+        'Device Profile': false,
+        'Power & Thermal': false,
+        'Network State': false,
+        'Storage & Performance': false,
       },
       'useCase': 'QA/compatibility analytics, energy studies',
       'retention': '30 days local, aggregates only shared',
@@ -87,8 +87,8 @@ class _MyDataPageState extends State<MyDataPage> {
       'description':
           'Sensor availability, permissions, data quality indicators',
       'subcategories': {
-        'Sensor Availability': true,
-        'Data Quality Indicators': true,
+        'Sensor Availability': false,
+        'Data Quality Indicators': false,
       },
       'useCase': 'Sampling bias correction, cleaning & weighting',
       'retention': 'Metadata only, no personal data',
