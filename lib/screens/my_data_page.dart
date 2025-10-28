@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
 import '../theme/app_colors.dart';
 import 'category_detail_page.dart';
 import '../services/real_data_collection_service.dart';
@@ -16,8 +17,16 @@ class _MyDataPageState extends State<MyDataPage> {
   final RealDataCollectionService _dataCollectionService =
       RealDataCollectionService();
   
+  final Logger _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      colors: true,
+      printEmojis: true,
+    ),
+  );
+  
   // Data collection categories with granular consent
-  Map<String, Map<String, dynamic>> _dataCategories = {
+  final Map<String, Map<String, dynamic>> _dataCategories = {
     'Core Device & Session': {
       'enabled': false,
       'description': 'Device profile, power, network, storage & performance',
@@ -121,7 +130,7 @@ class _MyDataPageState extends State<MyDataPage> {
           }
         });
       } catch (e) {
-        print('Error loading saved settings: $e');
+        _logger.e('Error loading saved settings: $e');
       }
     }
   }
