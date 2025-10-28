@@ -250,8 +250,8 @@ class ProfilePage extends StatelessWidget {
           ),
           Switch(
             value: appState.developerMode,
-            onChanged: (value) {
-              appState.toggleDeveloperMode();
+            onChanged: (value) async {
+              await appState.toggleDeveloperMode();
             },
             activeColor: theme.colorScheme.secondary,
           ),
