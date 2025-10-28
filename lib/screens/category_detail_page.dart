@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
+import '../models/app_state.dart';
+import '../services/real_data_collection_service.dart';
 
-class CategoryDetailPage extends StatelessWidget {
+class CategoryDetailPage extends StatefulWidget {
   final String categoryName;
   final Map<String, dynamic> categoryData;
 
@@ -12,10 +16,61 @@ class CategoryDetailPage extends StatelessWidget {
   });
 
   @override
+  State<CategoryDetailPage> createState() => _CategoryDetailPageState();
+}
+
+class _CategoryDetailPageState extends State<CategoryDetailPage> {
+  final RealDataCollectionService _dataService = RealDataCollectionService();
+  Map<String, Map<String, dynamic>> _realtimeData = {};
+  Timer? _dataTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startRealtimeData();
+  }
+
+  @override
+  void dispose() {
+    _dataTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startRealtimeData() {
+    _updateData();
+    _dataTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      _updateData();
+    });
+  }
+
+  Future<void> _updateData() async {
+    final subcategories = widget.categoryData['subcategories'] as Map<String, bool>;
+    final Map<String, Map<String, dynamic>> newData = {};
+    
+    // Collect data for all enabled subcategories
+    for (var entry in subcategories.entries) {
+      if (entry.value) {
+        final data = await _dataService.collectRealData(
+          widget.categoryName,
+          entry.key,
+        );
+        newData[entry.key] = data;
+      }
+    }
+    
+    if (mounted) {
+      setState(() {
+        _realtimeData = newData;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isEnabled = categoryData['enabled'] as bool;
-    final subcategories = categoryData['subcategories'] as Map<String, bool>;
+    final appState = context.watch<MyAppState>();
+    final isEnabled = widget.categoryData['enabled'] as bool;
+    final subcategories = widget.categoryData['subcategories'] as Map<String, bool>;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.primary,
@@ -27,7 +82,7 @@ class CategoryDetailPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          categoryName,
+          widget.categoryName,
           style: theme.textTheme.titleLarge?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -54,7 +109,7 @@ class CategoryDetailPage extends StatelessWidget {
                       Row(
                         children: [
                           Icon(
-                            categoryData['icon'] as IconData,
+                            widget.categoryData['icon'] as IconData,
                             color: isEnabled ? Colors.green : Colors.grey,
                             size: 32,
                           ),
@@ -64,7 +119,7 @@ class CategoryDetailPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  categoryName,
+                                  widget.categoryName,
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -102,7 +157,7 @@ class CategoryDetailPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        categoryData['description'] as String,
+                        widget.categoryData['description'] as String,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white70,
                         ),
@@ -132,7 +187,7 @@ class CategoryDetailPage extends StatelessWidget {
                       // Use Case
                       _buildDetailCard(
                         'Use Case',
-                        categoryData['useCase'] as String,
+                        widget.categoryData['useCase'] as String,
                         Icons.lightbulb_outline,
                         theme,
                       ),
@@ -142,7 +197,7 @@ class CategoryDetailPage extends StatelessWidget {
                       // Data Retention
                       _buildDetailCard(
                         'Data Retention',
-                        categoryData['retention'] as String,
+                        widget.categoryData['retention'] as String,
                         Icons.schedule,
                         theme,
                       ),
@@ -164,6 +219,7 @@ class CategoryDetailPage extends StatelessWidget {
                           entry.key,
                           entry.value,
                           theme,
+                          appState,
                         );
                       }),
 
@@ -262,40 +318,53 @@ class CategoryDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSubcategoryCard(String name, bool isEnabled, ThemeData theme) {
+  Widget _buildSubcategoryCard(String name, bool isEnabled, ThemeData theme, MyAppState appState) {
+    final hasRealtimeData = isEnabled && appState.developerMode && _realtimeData.containsKey(name);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Card(
-        color: Colors.white.withValues(alpha: 0.05),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.smallRadius),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            children: [
-              Icon(
-                isEnabled ? Icons.check_circle : Icons.cancel,
-                color: isEnabled ? Colors.green : Colors.grey,
-                size: 18,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  name,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            color: Colors.white.withValues(alpha: 0.05),
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.smallRadius),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                children: [
+                  Icon(
+                    isEnabled ? Icons.check_circle : Icons.cancel,
+                    color: isEnabled ? Colors.green : Colors.grey,
+                    size: 18,
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    isEnabled ? 'Active' : 'Paused',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isEnabled ? Colors.green : Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                isEnabled ? 'Active' : 'Paused',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: isEnabled ? Colors.green : Colors.grey,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          // Real-time Data Card for this subcategory
+          if (hasRealtimeData)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0, top: 8.0),
+              child: _buildRealtimeDataCardForSubcategory(name, theme),
+            ),
+        ],
       ),
     );
   }
@@ -336,10 +405,118 @@ class CategoryDetailPage extends StatelessWidget {
     );
   }
 
+  Widget _buildRealtimeDataCardForSubcategory(String subcategoryName, ThemeData theme) {
+    final data = _realtimeData[subcategoryName];
+    if (data == null) return const SizedBox.shrink();
+
+    return Card(
+      color: Colors.teal.withValues(alpha: 0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.mediumRadius,
+        side: BorderSide(color: Colors.teal.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.developer_mode, color: Colors.teal, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Real-time Data',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.teal,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 5,
+                        height: 5,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'LIVE',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SelectableText(
+                  _formatRealtimeData(data),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white,
+                    fontFamily: 'monospace',
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Updates every 2s',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.white54,
+                fontSize: 9,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatRealtimeData(Map<String, dynamic> data) {
+    final buffer = StringBuffer();
+    data.forEach((key, value) {
+      if (value is Map) {
+        buffer.writeln('$key:');
+        value.forEach((k, v) {
+          buffer.writeln('  $k: $v');
+        });
+      } else {
+        buffer.writeln('$key: $value');
+      }
+    });
+    return buffer.toString().trim();
+  }
+
   void _pauseCategory(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$categoryName data collection paused'),
+        content: Text('${widget.categoryName} data collection paused'),
         backgroundColor: Colors.orange,
       ),
     );
@@ -350,9 +527,9 @@ class CategoryDetailPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete $categoryName Data'),
+        title: Text('Delete ${widget.categoryName} Data'),
         content: Text(
-          'This will permanently delete all $categoryName data from your device. '
+          'This will permanently delete all ${widget.categoryName} data from your device. '
           'This action cannot be undone. Are you sure?',
         ),
         actions: [
@@ -365,7 +542,7 @@ class CategoryDetailPage extends StatelessWidget {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('$categoryName data deleted successfully'),
+                  content: Text('${widget.categoryName} data deleted successfully'),
                   backgroundColor: Colors.red,
                 ),
               );

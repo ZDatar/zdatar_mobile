@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
+import '../models/app_state.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -11,8 +13,9 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.colorScheme.primary,
       body: SafeArea(
-        child: Column(
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
             const SizedBox(height: 16),
             // Header with Profile title
             Padding(
@@ -90,47 +93,48 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 32),
 
             // Menu Items
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24.0),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-                  borderRadius: AppRadius.largeRadius,
-                ),
-                child: Column(
-                  children: [
-                    _buildMenuItem(
-                      context,
-                      'Personal Info',
-                      Icons.chevron_right,
-                      () {
-                        // Navigate to personal info page
-                      },
-                    ),
-                    _buildDivider(theme),
-                    _buildMenuItem(
-                      context,
-                      'Security',
-                      Icons.chevron_right,
-                      () {
-                        // Navigate to security page
-                      },
-                    ),
-                    _buildDivider(theme),
-                    _buildMenuItem(
-                      context,
-                      'Notifications',
-                      Icons.chevron_right,
-                      () {
-                        // Navigate to notifications page
-                      },
-                    ),
-                    _buildDivider(theme),
-                    _buildMenuItem(context, 'Support', Icons.chevron_right, () {
-                      // Navigate to support page
-                    }),
-                  ],
-                ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24.0),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                borderRadius: AppRadius.largeRadius,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildMenuItem(
+                    context,
+                    'Personal Info',
+                    Icons.chevron_right,
+                    () {
+                      // Navigate to personal info page
+                    },
+                  ),
+                  _buildDivider(theme),
+                  _buildMenuItem(
+                    context,
+                    'Security',
+                    Icons.chevron_right,
+                    () {
+                      // Navigate to security page
+                    },
+                  ),
+                  _buildDivider(theme),
+                  _buildMenuItem(
+                    context,
+                    'Notifications',
+                    Icons.chevron_right,
+                    () {
+                      // Navigate to notifications page
+                    },
+                  ),
+                  _buildDivider(theme),
+                  _buildMenuItem(context, 'Support', Icons.chevron_right, () {
+                    // Navigate to support page
+                  }),
+                  _buildDivider(theme),
+                  _buildDeveloperModeToggle(context),
+                ],
               ),
             ),
 
@@ -173,6 +177,7 @@ class ProfilePage extends StatelessWidget {
             // _buildBottomNavigationBar(context, theme),
           ],
         ),
+        ),
       ),
     );
   }
@@ -212,6 +217,46 @@ class ProfilePage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 50),
       height: 1,
       color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+    );
+  }
+
+  Widget _buildDeveloperModeToggle(BuildContext context) {
+    final theme = Theme.of(context);
+    final appState = context.watch<MyAppState>();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Developer Mode',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Show real-time data collection',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+          Switch(
+            value: appState.developerMode,
+            onChanged: (value) {
+              appState.toggleDeveloperMode();
+            },
+            activeColor: theme.colorScheme.secondary,
+          ),
+        ],
+      ),
     );
   }
 

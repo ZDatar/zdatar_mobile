@@ -4,8 +4,10 @@ import 'package:english_words/english_words.dart';
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   ThemeMode _themeMode = ThemeMode.system;
+  bool _developerMode = false;
 
   ThemeMode get themeMode => _themeMode;
+  bool get developerMode => _developerMode;
 
   void toggleTheme() {
     _themeMode = _themeMode == ThemeMode.light 
@@ -16,6 +18,11 @@ class MyAppState extends ChangeNotifier {
 
   void setThemeMode(ThemeMode mode) {
     _themeMode = mode;
+    notifyListeners();
+  }
+
+  void toggleDeveloperMode() {
+    _developerMode = !_developerMode;
     notifyListeners();
   }
 

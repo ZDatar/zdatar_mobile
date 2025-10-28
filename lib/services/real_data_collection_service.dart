@@ -101,6 +101,14 @@ class RealDataCollectionService {
     _collectedData.removeWhere((key, value) => key.startsWith('$category:'));
   }
 
+  // Public method to collect real-time data for developer mode
+  Future<Map<String, dynamic>> collectRealData(
+    String category,
+    String subcategory,
+  ) async {
+    return await _collectRealData(category, subcategory);
+  }
+
   void _startSensorStreams() {
     _accelerometerSubscription = accelerometerEventStream().listen((event) {
       _latestAccelerometer = event;
