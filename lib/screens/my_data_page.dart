@@ -69,22 +69,6 @@ class _MyDataPageState extends State<MyDataPage> {
       'retention': 'Daily/hourly bins, sync once daily',
       'icon': Icons.favorite,
     },
-    'Commerce & Finance': {
-      'enabled': false,
-      'description': 'Purchase telemetry, wallet activity (opt-in, no PII)',
-      'subcategories': {'Purchase Telemetry': false, 'Wallet Activity': false},
-      'useCase': 'Macro consumption trends, marketplace analytics',
-      'retention': 'Amount bins only, no merchant names',
-      'icon': Icons.payment,
-    },
-    'Context Semantics': {
-      'enabled': false,
-      'description': 'Home/work anchors, routine features (computed on device)',
-      'subcategories': {'Home/Work Anchors': false, 'Routine Features': false},
-      'useCase': 'Commute analytics, behavioral science cohorts',
-      'retention': 'Binary flags only, coordinates never uploaded',
-      'icon': Icons.home_work,
-    },
     'Developer & QA': {
       'enabled': false,
       'description':

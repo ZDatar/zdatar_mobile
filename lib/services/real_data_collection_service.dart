@@ -202,10 +202,6 @@ class RealDataCollectionService {
           return await _collectAppBehaviorData(subcategory, timestamp);
         case 'Health & Wellness':
           return await _collectHealthData(subcategory, timestamp);
-        case 'Commerce & Finance':
-          return await _collectCommerceData(subcategory, timestamp);
-        case 'Context Semantics':
-          return await _collectContextData(subcategory, timestamp);
         case 'Developer & QA':
           return await _collectDeveloperData(subcategory, timestamp);
         default:
@@ -550,30 +546,6 @@ class RealDataCollectionService {
         'health_available': false,
       };
     }
-  }
-
-  Future<Map<String, dynamic>> _collectCommerceData(
-    String subcategory,
-    DateTime timestamp,
-  ) async {
-    // Note: Commerce data would require integration with payment systems
-    return {
-      'timestamp': timestamp.toIso8601String(),
-      'note': 'Commerce data collection requires payment system integration',
-      'subcategory': subcategory,
-    };
-  }
-
-  Future<Map<String, dynamic>> _collectContextData(
-    String subcategory,
-    DateTime timestamp,
-  ) async {
-    // Context data can be derived from location and usage patterns
-    return {
-      'timestamp': timestamp.toIso8601String(),
-      'note': 'Context data derived from location and usage patterns',
-      'subcategory': subcategory,
-    };
   }
 
   Future<Map<String, dynamic>> _collectDeveloperData(

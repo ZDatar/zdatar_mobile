@@ -91,10 +91,6 @@ class DataCollectionService {
         return _generateAppBehaviorData(subcategory, random, timestamp);
       case 'Health & Wellness':
         return _generateHealthData(subcategory, random, timestamp);
-      case 'Commerce & Finance':
-        return _generateCommerceData(subcategory, random, timestamp);
-      case 'Context Semantics':
-        return _generateContextData(subcategory, random, timestamp);
       case 'Developer & QA':
         return _generateDeveloperData(subcategory, random, timestamp);
       default:
@@ -267,78 +263,6 @@ class DataCollectionService {
             'third_party',
           ][random.nextInt(3)],
           'accuracy_level': ['high', 'medium', 'low'][random.nextInt(3)],
-        };
-      default:
-        return {
-          'timestamp': timestamp.toIso8601String(),
-          'value': random.nextDouble(),
-        };
-    }
-  }
-
-  Map<String, dynamic> _generateCommerceData(
-    String subcategory,
-    Random random,
-    DateTime timestamp,
-  ) {
-    switch (subcategory) {
-      case 'Purchase Telemetry':
-        return {
-          'timestamp': timestamp.toIso8601String(),
-          'transaction_amount_range': [
-            '\$0-10',
-            '\$10-50',
-            '\$50-100',
-            '\$100+',
-          ][random.nextInt(4)],
-          'category': [
-            'food',
-            'retail',
-            'entertainment',
-            'transport',
-          ][random.nextInt(4)],
-          'payment_method': [
-            'card',
-            'digital_wallet',
-            'cash',
-          ][random.nextInt(3)],
-        };
-      case 'Wallet Activity':
-        return {
-          'timestamp': timestamp.toIso8601String(),
-          'transactions_today': random.nextInt(10),
-          'wallet_balance_range': ['low', 'medium', 'high'][random.nextInt(3)],
-        };
-      default:
-        return {
-          'timestamp': timestamp.toIso8601String(),
-          'value': random.nextDouble(),
-        };
-    }
-  }
-
-  Map<String, dynamic> _generateContextData(
-    String subcategory,
-    Random random,
-    DateTime timestamp,
-  ) {
-    switch (subcategory) {
-      case 'Home/Work Anchors':
-        return {
-          'timestamp': timestamp.toIso8601String(),
-          'current_context': ['home', 'work', 'other'][random.nextInt(3)],
-          'confidence_score': random.nextDouble(),
-        };
-      case 'Routine Features':
-        return {
-          'timestamp': timestamp.toIso8601String(),
-          'routine_type': [
-            'morning',
-            'commute',
-            'work',
-            'evening',
-          ][random.nextInt(4)],
-          'routine_confidence': random.nextDouble(),
         };
       default:
         return {
