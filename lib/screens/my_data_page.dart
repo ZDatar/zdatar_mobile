@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 import 'category_detail_page.dart';
 import '../services/real_data_collection_service.dart';
@@ -13,8 +15,9 @@ class MyDataPage extends StatefulWidget {
 class _MyDataPageState extends State<MyDataPage> {
   final RealDataCollectionService _dataCollectionService =
       RealDataCollectionService();
+  
   // Data collection categories with granular consent
-  final Map<String, Map<String, dynamic>> _dataCategories = {
+  Map<String, Map<String, dynamic>> _dataCategories = {
     'Core Device & Session': {
       'enabled': false,
       'description': 'Device profile, power, network, storage & performance',
@@ -95,6 +98,63 @@ class _MyDataPageState extends State<MyDataPage> {
       'icon': Icons.bug_report,
     },
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedSettings();
+  }
+
+  Future<void> _loadSavedSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedData = prefs.getString('data_categories');
+    
+    if (savedData != null) {
+      try {
+        final decoded = json.decode(savedData) as Map<String, dynamic>;
+        setState(() {
+          decoded.forEach((category, data) {
+            if (_dataCategories.containsKey(category)) {
+              _dataCategories[category]!['enabled'] = data['enabled'] ?? false;
+              final savedSubcategories = data['subcategories'] as Map<String, dynamic>?;
+              if (savedSubcategories != null) {
+                final subcategories = _dataCategories[category]!['subcategories'] as Map<String, bool>;
+                savedSubcategories.forEach((key, value) {
+                  if (subcategories.containsKey(key)) {
+                    subcategories[key] = value as bool;
+                  }
+                });
+              }
+            }
+          });
+        });
+        
+        // Restart data collection for enabled categories
+        _dataCategories.forEach((category, data) {
+          if (data['enabled'] == true) {
+            final subcategories = data['subcategories'] as Map<String, bool>;
+            _dataCollectionService.startCategoryCollection(category, subcategories);
+          }
+        });
+      } catch (e) {
+        print('Error loading saved settings: $e');
+      }
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dataToSave = <String, dynamic>{};
+    
+    _dataCategories.forEach((category, data) {
+      dataToSave[category] = {
+        'enabled': data['enabled'],
+        'subcategories': data['subcategories'],
+      };
+    });
+    
+    await prefs.setString('data_categories', json.encode(dataToSave));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -266,6 +326,7 @@ class _MyDataPageState extends State<MyDataPage> {
                                   );
                                 }
                               });
+                              _saveSettings();
                             },
                             activeColor: Colors.green,
                             activeTrackColor: Colors.green.withValues(
@@ -438,6 +499,7 @@ class _MyDataPageState extends State<MyDataPage> {
                           subcategories,
                         );
                       });
+                      _saveSettings();
                     }
                   : null,
               activeColor: Colors.green,
@@ -505,6 +567,7 @@ class _MyDataPageState extends State<MyDataPage> {
         _dataCollectionService.startCategoryCollection(category, subcategories);
       }
     });
+    _saveSettings();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('All data collection enabled'),
@@ -525,6 +588,7 @@ class _MyDataPageState extends State<MyDataPage> {
         _dataCollectionService.stopCategoryCollection(category);
       }
     });
+    _saveSettings();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('All data collection paused'),
@@ -574,8 +638,8 @@ class _MyDataPageState extends State<MyDataPage> {
     BuildContext context,
     String category,
     Map<String, dynamic> categoryData,
-  ) {
-    Navigator.of(context).push(
+  ) async {
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => CategoryDetailPage(
           categoryName: category,
@@ -583,6 +647,9 @@ class _MyDataPageState extends State<MyDataPage> {
         ),
       ),
     );
+    // Refresh the state and save when returning from detail page
+    setState(() {});
+    _saveSettings();
   }
 
   void _deleteCategoryData(String category) {

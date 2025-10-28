@@ -22,6 +22,9 @@ PODS:
     - Flutter
   - sensors_plus (0.0.1):
     - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - wifi_scan (0.0.1):
     - Flutter
 
@@ -37,6 +40,7 @@ DEPENDENCIES:
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - sensors_plus (from `.symlinks/plugins/sensors_plus/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - wifi_scan (from `.symlinks/plugins/wifi_scan/ios`)
 
 EXTERNAL SOURCES:
@@ -62,6 +66,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   sensors_plus:
     :path: ".symlinks/plugins/sensors_plus/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   wifi_scan:
     :path: ".symlinks/plugins/wifi_scan/ios"
 
@@ -77,6 +83,7 @@ SPEC CHECKSUMS:
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   sensors_plus: 3c3bac724a2128c895623e03efd82cf0e94fd8e8
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   wifi_scan: 3254c160abc7266feac359a927f8ab64f2703774
 
 PODFILE CHECKSUM: e30f02f9d1c72c47bb6344a0a748c9d268180865

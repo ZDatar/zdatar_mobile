@@ -234,18 +234,7 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
                       Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _pauseCategory(context),
-                              icon: const Icon(Icons.pause, size: 16),
-                              label: const Text('Pause Collection'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.orange,
-                                side: const BorderSide(color: Colors.orange),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
+                            child: _buildToggleButton(subcategories, theme),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -513,14 +502,61 @@ class _CategoryDetailPageState extends State<CategoryDetailPage> {
     return buffer.toString().trim();
   }
 
-  void _pauseCategory(BuildContext context) {
+  Widget _buildToggleButton(Map<String, bool> subcategories, ThemeData theme) {
+    final allDisabled = subcategories.values.every((enabled) => !enabled);
+    
+    if (allDisabled) {
+      return OutlinedButton.icon(
+        onPressed: () => _toggleAllSubcategories(context, subcategories, true),
+        icon: const Icon(Icons.play_arrow, size: 16),
+        label: const Text('Enable All'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.green,
+          side: const BorderSide(color: Colors.green),
+          padding: const EdgeInsets.symmetric(
+            vertical: 12,
+          ),
+        ),
+      );
+    } else {
+      return OutlinedButton.icon(
+        onPressed: () => _toggleAllSubcategories(context, subcategories, false),
+        icon: const Icon(Icons.pause, size: 16),
+        label: const Text('Pause All'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.orange,
+          side: const BorderSide(color: Colors.orange),
+          padding: const EdgeInsets.symmetric(
+            vertical: 12,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _toggleAllSubcategories(BuildContext context, Map<String, bool> subcategories, bool enable) {
+    setState(() {
+      subcategories.updateAll((key, value) => enable);
+      widget.categoryData['enabled'] = enable;
+    });
+    
+    // Start or stop data collection service
+    if (enable) {
+      _dataService.startCategoryCollection(widget.categoryName, subcategories);
+    } else {
+      _dataService.stopCategoryCollection(widget.categoryName);
+    }
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${widget.categoryName} data collection paused'),
-        backgroundColor: Colors.orange,
+        content: Text(
+          enable 
+            ? '${widget.categoryName} - All subcategories enabled'
+            : '${widget.categoryName} - All subcategories paused'
+        ),
+        backgroundColor: enable ? Colors.green : Colors.orange,
       ),
     );
-    Navigator.of(context).pop();
   }
 
   void _deleteData(BuildContext context) {
