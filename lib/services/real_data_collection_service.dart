@@ -424,9 +424,6 @@ class RealDataCollectionService {
             'gyroscope_x': _latestGyroscope?.x ?? 0.0,
             'gyroscope_y': _latestGyroscope?.y ?? 0.0,
             'gyroscope_z': _latestGyroscope?.z ?? 0.0,
-            'magnetometer_x': _latestMagnetometer?.x ?? 0.0,
-            'magnetometer_y': _latestMagnetometer?.y ?? 0.0,
-            'magnetometer_z': _latestMagnetometer?.z ?? 0.0,
           };
         } else {
           return {
@@ -449,13 +446,8 @@ class RealDataCollectionService {
           'magnetometer_x': _latestMagnetometer?.x ?? 0.0,
           'magnetometer_y': _latestMagnetometer?.y ?? 0.0,
           'magnetometer_z': _latestMagnetometer?.z ?? 0.0,
-          'magnetometer_available': _latestMagnetometer != null,
           'barometer_pressure_hpa': _latestBarometerPressure ?? _simulateBarometerPressure(),
-          'barometer_available': _barometerAvailable,
           'altitude_estimate_m': _latestBarometerPressure != null ? _calculateAltitudeFromPressure(_latestBarometerPressure!) : _calculateAltitudeFromPressure(_simulateBarometerPressure()),
-          'streams_active': _magnetometerSubscription != null || _barometerSubscription != null,
-          'magnetometer_stream_active': _magnetometerSubscription != null,
-          'barometer_stream_active': _barometerSubscription != null,
         };
 
       case 'Proximity Scans':
@@ -479,13 +471,8 @@ class RealDataCollectionService {
         'magnetometer_x': _latestMagnetometer?.x ?? 0.0,
         'magnetometer_y': _latestMagnetometer?.y ?? 0.0,
         'magnetometer_z': _latestMagnetometer?.z ?? 0.0,
-        'magnetometer_available': _latestMagnetometer != null,
         'barometer_pressure_hpa': _latestBarometerPressure ?? _simulateBarometerPressure(),
-        'barometer_available': _barometerAvailable,
         'altitude_estimate_m': _latestBarometerPressure != null ? _calculateAltitudeFromPressure(_latestBarometerPressure!) : _calculateAltitudeFromPressure(_simulateBarometerPressure()),
-        'streams_active': _magnetometerSubscription != null || _barometerSubscription != null,
-        'magnetometer_stream_active': _magnetometerSubscription != null,
-        'barometer_stream_active': _barometerSubscription != null,
       };
     }
 
