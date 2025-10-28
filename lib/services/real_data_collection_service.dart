@@ -1152,7 +1152,6 @@ class RealDataCollectionService {
     if (!_healthInitialized || _health == null) {
       return {
         'timestamp': timestamp.toIso8601String(),
-        'health_available': false,
         'note': 'Health services not available or not authorized',
         'subcategory': 'Activity & Vitals',
       };
@@ -1209,7 +1208,6 @@ class RealDataCollectionService {
       
       return {
         'timestamp': timestamp.toIso8601String(),
-        'health_available': true,
         'steps_24h': totalSteps.round(),
         'avg_heart_rate_bpm': avgHeartRate?.round(),
         'active_energy_kcal_24h': totalActiveEnergy.round(),
@@ -1223,7 +1221,6 @@ class RealDataCollectionService {
       _logger.w('Activity vitals collection error: $e');
       return {
         'timestamp': timestamp.toIso8601String(),
-        'health_available': false,
         'error': 'Failed to collect activity vitals: $e',
         'subcategory': 'Activity & Vitals',
       };
@@ -1235,7 +1232,6 @@ class RealDataCollectionService {
     if (!_healthInitialized || _health == null) {
       return {
         'timestamp': timestamp.toIso8601String(),
-        'health_available': false,
         'note': 'Health services not available or not authorized',
         'subcategory': 'Sensor Provenance',
       };
@@ -1275,7 +1271,6 @@ class RealDataCollectionService {
       
       return {
         'timestamp': timestamp.toIso8601String(),
-        'health_available': true,
         'available_data_types': availableTypes,
         'total_available_types': availableTypes.length,
         'platform': Platform.isIOS ? 'HealthKit' : 'Health Connect',
@@ -1288,7 +1283,6 @@ class RealDataCollectionService {
       _logger.w('Sensor provenance collection error: $e');
       return {
         'timestamp': timestamp.toIso8601String(),
-        'health_available': false,
         'error': 'Failed to collect sensor provenance: $e',
         'subcategory': 'Sensor Provenance',
       };
