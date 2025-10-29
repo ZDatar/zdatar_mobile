@@ -44,6 +44,19 @@ dependencies:
   sqflite: ^2.3.0
   path: ^1.8.3
   
+  # Cryptography packages
+  cryptography: ^2.7.0
+  flutter_secure_storage: ^9.0.0
+  crypto: ^3.0.5
+  bip39: ^1.0.6
+  ed25519_hd_key: ^2.2.1
+  bs58check: ^1.0.2
+  csv: ^6.0.0
+  convert: ^3.1.1
+  
+  # Upload services
+  dio: ^5.4.0
+  
   # Device data collection packages
   device_info_plus: ^10.1.0
   battery_plus: ^6.0.1
