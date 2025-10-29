@@ -6,6 +6,8 @@ import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:bs58check/bs58check.dart' as bs58;
 import 'package:logger/logger.dart';
 import 'package:cryptography/cryptography.dart' as crypto;
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 /// Solana wallet service for managing Ed25519 keypairs
 /// and converting to X25519 for encryption
@@ -25,6 +27,7 @@ class SolanaWalletService {
   );
 
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final ApiConfig _config = ApiConfig();
   
   // Storage keys
   static const String _mnemonicKey = 'solana_mnemonic';
@@ -301,5 +304,185 @@ class SolanaWalletService {
     _cachedPrivateKey = null;
     _cachedPublicKey = null;
     _logger.d('Cleared wallet cache');
+  }
+
+  // ============================================================================
+  // Solana RPC Methods
+  // ============================================================================
+
+  /// Get SOL balance for the current wallet
+  Future<double> getBalance() async {
+    try {
+      await getEd25519PublicKey(); // Ensure wallet is loaded
+      final publicKeyBase58 = getPublicKeyBase58();
+      
+      final response = await http.post(
+        Uri.parse(_config.solanaRpcUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'jsonrpc': '2.0',
+          'id': 1,
+          'method': 'getBalance',
+          'params': [publicKeyBase58],
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final lamports = data['result']['value'] as int;
+        // Convert lamports to SOL (1 SOL = 1,000,000,000 lamports)
+        return lamports / 1000000000.0;
+      }
+
+      throw Exception('Failed to get balance: ${response.statusCode}');
+    } catch (e) {
+      _logger.e('Error getting balance: $e');
+      rethrow;
+    }
+  }
+
+  /// Get recent blockhash for transaction
+  Future<String> getRecentBlockhash() async {
+    try {
+      final response = await http.post(
+        Uri.parse(_config.solanaRpcUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'jsonrpc': '2.0',
+          'id': 1,
+          'method': 'getLatestBlockhash',
+          'params': [
+            {'commitment': 'finalized'}
+          ],
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['result']['value']['blockhash'] as String;
+      }
+
+      throw Exception('Failed to get blockhash: ${response.statusCode}');
+    } catch (e) {
+      _logger.e('Error getting blockhash: $e');
+      rethrow;
+    }
+  }
+
+  /// Send raw transaction to Solana network
+  Future<String?> sendTransaction(Uint8List signedTransaction) async {
+    try {
+      final encodedTx = base64.encode(signedTransaction);
+      
+      final response = await http.post(
+        Uri.parse(_config.solanaRpcUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'jsonrpc': '2.0',
+          'id': 1,
+          'method': 'sendTransaction',
+          'params': [
+            encodedTx,
+            {'encoding': 'base64', 'preflightCommitment': 'confirmed'}
+          ],
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['error'] != null) {
+          throw Exception('Transaction error: ${data['error']}');
+        }
+        return data['result'] as String?;
+      }
+
+      throw Exception('Failed to send transaction: ${response.statusCode}');
+    } catch (e) {
+      _logger.e('Error sending transaction: $e');
+      rethrow;
+    }
+  }
+
+  /// Confirm transaction
+  Future<bool> confirmTransaction(String signature, {int maxRetries = 30}) async {
+    try {
+      for (int i = 0; i < maxRetries; i++) {
+        final response = await http.post(
+          Uri.parse(_config.solanaRpcUrl),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'jsonrpc': '2.0',
+            'id': 1,
+            'method': 'getSignatureStatuses',
+            'params': [
+              [signature],
+              {'searchTransactionHistory': true}
+            ],
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final statuses = data['result']['value'] as List?;
+          
+          if (statuses != null && statuses.isNotEmpty && statuses[0] != null) {
+            final status = statuses[0] as Map<String, dynamic>;
+            if (status['confirmationStatus'] == 'finalized' || 
+                status['confirmationStatus'] == 'confirmed') {
+              return status['err'] == null;
+            }
+          }
+        }
+
+        // Wait 1 second before retry
+        await Future.delayed(const Duration(seconds: 1));
+      }
+
+      return false;
+    } catch (e) {
+      _logger.e('Error confirming transaction: $e');
+      return false;
+    }
+  }
+
+  /// Get transaction history for the wallet
+  Future<List<Map<String, dynamic>>> getTransactionHistory({int limit = 10}) async {
+    try {
+      final publicKeyBase58 = getPublicKeyBase58();
+      
+      final response = await http.post(
+        Uri.parse(_config.solanaRpcUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'jsonrpc': '2.0',
+          'id': 1,
+          'method': 'getSignaturesForAddress',
+          'params': [
+            publicKeyBase58,
+            {'limit': limit}
+          ],
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['result'] ?? []);
+      }
+
+      throw Exception('Failed to get transaction history: ${response.statusCode}');
+    } catch (e) {
+      _logger.e('Error getting transaction history: $e');
+      return [];
+    }
+  }
+
+  /// Get Solana program ID from config
+  String getProgramId() {
+    return _config.solanaProgramId;
+  }
+
+  /// Check if Solana configuration is valid
+  bool isSolanaConfigured() {
+    return _config.isSolanaConfigured;
   }
 }

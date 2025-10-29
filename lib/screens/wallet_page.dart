@@ -71,6 +71,17 @@ class _WalletPageState extends State<WalletPage> {
     try {
       await _walletService.getEd25519PublicKey();
       final address = _walletService.getPublicKeyBase58();
+
+      // Fetch real SOL balance from Solana RPC
+      double solBalance = 0.0;
+      try {
+        solBalance = await _walletService.getBalance();
+        // debugPrint('💰 Fetched real balance: $solBalance SOL');
+      } catch (e) {
+        debugPrint('⚠️ Could not fetch on-chain balance: $e');
+        // Fall back to deal-based calculation if RPC fails
+      }
+
       final dealsResponse = await _dealsService.fetchDeals();
       final myDeals =
           dealsResponse?.deals
@@ -80,13 +91,13 @@ class _WalletPageState extends State<WalletPage> {
               )
               .toList() ??
           [];
-      final totals = _calculateDealTotals(myDeals, address);
 
       if (mounted) {
         setState(() {
           _walletAddress = address;
           _myDeals = myDeals;
-          _balance = totals['net']!;
+          // Use real Solana balance instead of deal totals
+          _balance = solBalance.toStringAsFixed(4);
         });
       }
     } catch (e) {

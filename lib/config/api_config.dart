@@ -52,4 +52,61 @@ class ApiConfig {
   void clearCache() {
     _cachedBaseUrl = null;
   }
+
+  // ============================================================================
+  // Solana Configuration
+  // ============================================================================
+
+  /// Get Solana RPC URL from environment
+  String get solanaRpcUrl {
+    return dotenv.env['SOLANA_RPC_URL'] ?? 'https://api.devnet.solana.com';
+  }
+
+  /// Get Solana Program ID from environment
+  String get solanaProgramId {
+    return dotenv.env['SOLANA_PROGRAM_ID'] ?? '';
+  }
+
+  // ============================================================================
+  // IPFS Configuration
+  // ============================================================================
+
+  /// Get IPFS API URL from environment
+  String get ipfsApiUrl {
+    return dotenv.env['IPFS_API_URL'] ?? 'https://ipfs.infura.io:5001';
+  }
+
+  // ============================================================================
+  // Azure Storage Configuration
+  // ============================================================================
+
+  /// Get Azure Storage Account name
+  String get azureStorageAccount {
+    return dotenv.env['AZURE_STORAGE_ACCOUNT'] ?? '';
+  }
+
+  /// Get Azure Storage Access Key
+  String get azureStorageAccessKey {
+    return dotenv.env['AZURE_STORAGE_ACCESS_KEY'] ?? '';
+  }
+
+  /// Get Azure Container Name
+  String get azureContainerName {
+    return dotenv.env['AZURE_CONTAINER_NAME'] ?? 'zdatar-datasets';
+  }
+
+  /// Check if Azure Storage is properly configured
+  bool get isAzureConfigured {
+    return azureStorageAccount.isNotEmpty && azureStorageAccessKey.isNotEmpty;
+  }
+
+  /// Check if IPFS is properly configured
+  bool get isIpfsConfigured {
+    return ipfsApiUrl.isNotEmpty;
+  }
+
+  /// Check if Solana is properly configured
+  bool get isSolanaConfigured {
+    return solanaRpcUrl.isNotEmpty && solanaProgramId.isNotEmpty;
+  }
 }
