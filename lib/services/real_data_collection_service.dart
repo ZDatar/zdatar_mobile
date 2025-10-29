@@ -13,6 +13,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:wifi_scan/wifi_scan.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:health/health.dart';
+import 'data_cache_service.dart';
 
 class RealDataCollectionService {
   static final RealDataCollectionService _instance =
@@ -40,6 +41,7 @@ class RealDataCollectionService {
   final Battery _battery = Battery();
   final Connectivity _connectivity = Connectivity();
   final NetworkInfo _networkInfo = NetworkInfo();
+  final DataCacheService _cacheService = DataCacheService();
 
   // Sensor data streams
   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
@@ -174,16 +176,41 @@ class RealDataCollectionService {
       final data = await _collectRealData(category, subcategory);
       _collectedData[key] = data;
 
+      // Cache the collected data
+      await _cacheCollectedData(category, subcategory, data);
+
       _logger.d('[$category] $subcategory: ${_formatDataForConsole(data)}');
     });
 
     // Collect initial data immediately
-    _collectRealData(category, subcategory).then((initialData) {
+    _collectRealData(category, subcategory).then((initialData) async {
       _collectedData[key] = initialData;
+      
+      // Cache the initial data
+      await _cacheCollectedData(category, subcategory, initialData);
+      
       _logger.d(
         '[$category] $subcategory: ${_formatDataForConsole(initialData)}',
       );
     });
+  }
+  
+  /// Cache collected data to local database
+  Future<void> _cacheCollectedData(
+    String category,
+    String subcategory,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      // Don't cache error data
+      if (data.containsKey('error')) {
+        return;
+      }
+      
+      await _cacheService.cacheCollectedData(category, subcategory, data);
+    } catch (e) {
+      _logger.w('Failed to cache data for $category/$subcategory: $e');
+    }
   }
 
   Future<Map<String, dynamic>> _collectRealData(

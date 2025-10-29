@@ -9,10 +9,17 @@ import 'screens/market_place_page.dart';
 import 'theme/app_theme.dart';
 import 'screens/profile_page.dart';
 import 'screens/notification_page.dart';
+import 'services/data_cache_service.dart';
 
 Future<void> main() async {
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  
   // Load .env file
   await dotenv.load(fileName: ".env");
+  
+  // Initialize data cache service
+  await DataCacheService().initialize();
   
   runApp(MyApp());
 }
