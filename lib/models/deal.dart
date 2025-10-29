@@ -5,6 +5,7 @@ class Deal {
   final String status;
   final String? datasetId;
   final String solanaTxHash;
+  final String icon;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? expiresAt;
@@ -17,6 +18,7 @@ class Deal {
     required this.status,
     this.datasetId,
     required this.solanaTxHash,
+    required this.icon,
     required this.createdAt,
     required this.updatedAt,
     this.expiresAt,
@@ -31,6 +33,7 @@ class Deal {
       status: json['status'] as String,
       datasetId: json['dataset_id'] as String?,
       solanaTxHash: json['solana_tx_hash'] as String,
+      icon: json['icon'] as String? ?? '📊',
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       expiresAt: json['expires_at'] != null 
@@ -50,6 +53,7 @@ class Deal {
       'status': status,
       'dataset_id': datasetId,
       'solana_tx_hash': solanaTxHash,
+      'icon': icon,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'expires_at': expiresAt?.toIso8601String(),
@@ -61,22 +65,38 @@ class Deal {
 class DealMeta {
   final String currency;
   final String dataType;
+  final String dataCategory;
+  final List<String> dataSubcategories;
+  final List<String> dataFieldsRequired;
   final String price;
   final String requestDescription;
+  final String buyerWallet;
 
   DealMeta({
     required this.currency,
     required this.dataType,
+    required this.dataCategory,
+    required this.dataSubcategories,
+    required this.dataFieldsRequired,
     required this.price,
     required this.requestDescription,
+    required this.buyerWallet,
   });
 
   factory DealMeta.fromJson(Map<String, dynamic> json) {
     return DealMeta(
       currency: json['currency'] as String,
       dataType: json['data_type'] as String,
+      dataCategory: json['data_category'] as String,
+      dataSubcategories: (json['data_subcategories'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      dataFieldsRequired: (json['data_fields_required'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
       price: json['price'] as String,
       requestDescription: json['request_description'] as String,
+      buyerWallet: json['buyer_wallet'] as String,
     );
   }
 
@@ -84,8 +104,12 @@ class DealMeta {
     return {
       'currency': currency,
       'data_type': dataType,
+      'data_category': dataCategory,
+      'data_subcategories': dataSubcategories,
+      'data_fields_required': dataFieldsRequired,
       'price': price,
       'request_description': requestDescription,
+      'buyer_wallet': buyerWallet,
     };
   }
 }

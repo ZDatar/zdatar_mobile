@@ -39,23 +39,6 @@ class _DealDetailPageState extends State<DealDetailPage> {
     }
   }
 
-  IconData _getIconForDataType(String? dataType) {
-    if (dataType == null) return Icons.data_usage;
-    switch (dataType.toLowerCase()) {
-      case 'location':
-        return Icons.location_on;
-      case 'health':
-        return Icons.favorite;
-      case 'app usage':
-      case 'app':
-        return Icons.apps;
-      case 'motion':
-      case 'sensor':
-        return Icons.sensors;
-      default:
-        return Icons.data_usage;
-    }
-  }
 
   String _formatDateTime(DateTime dateTime) {
     return DateFormat('MMM dd, yyyy HH:mm').format(dateTime);
@@ -161,7 +144,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
     final currency = deal.dealMeta?.currency ?? 'SOL';
     final dataType = deal.dealMeta?.dataType ?? 'Data';
     final description = deal.dealMeta?.requestDescription ?? 'No description';
-    final icon = _getIconForDataType(dataType);
+    final icon = deal.icon;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.primary,
@@ -200,10 +183,9 @@ class _DealDetailPageState extends State<DealDetailPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Icon(
+                            Text(
                               icon,
-                              color: theme.colorScheme.secondary,
-                              size: 80,
+                              style: const TextStyle(fontSize: 80),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -298,6 +280,60 @@ class _DealDetailPageState extends State<DealDetailPage> {
                         value: deal.solanaTxHash.substring(0, 8) + '...',
                         theme: theme,
                       ),
+                      if (deal.dealMeta?.dataCategory != null) ...[
+                        const SizedBox(height: 8),
+                        _InfoRow(
+                          label: 'Data Category',
+                          value: deal.dealMeta!.dataCategory,
+                          theme: theme,
+                        ),
+                      ],
+                      if (deal.dealMeta?.dataSubcategories.isNotEmpty == true) ...[
+                        const SizedBox(height: 8),
+                        _InfoRow(
+                          label: 'Subcategories',
+                          value: deal.dealMeta!.dataSubcategories.join(', '),
+                          theme: theme,
+                        ),
+                      ],
+                      if (deal.dealMeta?.dataFieldsRequired.isNotEmpty == true) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          'Required Data Fields (${deal.dealMeta!.dataFieldsRequired.length})',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: theme.colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: deal.dealMeta!.dataFieldsRequired.map((field) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.secondary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: theme.colorScheme.secondary.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                field,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.secondary,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                       const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,

@@ -48,23 +48,6 @@ class _MarketPlacePageState extends State<MarketPlacePage> {
     }
   }
 
-  IconData _getIconForDataType(String? dataType) {
-    if (dataType == null) return Icons.data_usage;
-    switch (dataType.toLowerCase()) {
-      case 'location':
-        return Icons.location_on;
-      case 'health':
-        return Icons.favorite;
-      case 'app usage':
-      case 'app':
-        return Icons.apps;
-      case 'motion':
-      case 'sensor':
-        return Icons.sensors;
-      default:
-        return Icons.data_usage;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +118,6 @@ class _MarketPlacePageState extends State<MarketPlacePage> {
                           final deal = _deals[index];
                           return _MarketCard(
                             deal: deal,
-                            icon: _getIconForDataType(deal.dealMeta?.dataType),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -160,12 +142,10 @@ class _MarketPlacePageState extends State<MarketPlacePage> {
 
 class _MarketCard extends StatelessWidget {
   final Deal deal;
-  final IconData icon;
   final VoidCallback? onTap;
 
   const _MarketCard({
     required this.deal,
-    required this.icon,
     this.onTap,
   });
 
@@ -216,7 +196,10 @@ class _MarketCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: theme.colorScheme.secondary, size: 40),
+              Text(
+                deal.icon,
+                style: const TextStyle(fontSize: 40),
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
