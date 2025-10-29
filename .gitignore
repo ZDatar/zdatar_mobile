@@ -91,3 +91,8 @@ web/
 # Linux/Windows ephemeral
 linux/
 windows/
+
+# Environment variables
+.env
+.env.local
+.env.*.local

@@ -1,9 +1,70 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'deal_detail_page.dart';
 import '../theme/app_colors.dart';
+import '../models/deal.dart';
+import '../services/deals_service.dart';
 
-class MarketPlacePage extends StatelessWidget {
+class MarketPlacePage extends StatefulWidget {
   const MarketPlacePage({super.key});
+
+  @override
+  State<MarketPlacePage> createState() => _MarketPlacePageState();
+}
+
+class _MarketPlacePageState extends State<MarketPlacePage> {
+  final DealsService _dealsService = DealsService();
+  List<Deal> _deals = [];
+  bool _isLoading = true;
+  Timer? _pollTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDeals();
+    // Poll every 1 second
+    _pollTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _fetchDeals();
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchDeals() async {
+    final response = await _dealsService.fetchDeals();
+    if (response != null && mounted) {
+      setState(() {
+        _deals = response.deals;
+        _isLoading = false;
+      });
+    } else if (mounted && _isLoading) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  IconData _getIconForDataType(String? dataType) {
+    if (dataType == null) return Icons.data_usage;
+    switch (dataType.toLowerCase()) {
+      case 'location':
+        return Icons.location_on;
+      case 'health':
+        return Icons.favorite;
+      case 'app usage':
+      case 'app':
+        return Icons.apps;
+      case 'motion':
+      case 'sensor':
+        return Icons.sensors;
+      default:
+        return Icons.data_usage;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,52 +78,77 @@ class MarketPlacePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Marketplace',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (_isLoading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
               Text(
-                'Marketplace',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                '${_deals.length} active deals',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
-              const SizedBox(height: 32),
-              _MarketCard(
-                reward: '\$1.35',
-                title: 'Urban Mobility Study',
-                subtitle: 'Per 7 days GPS Data',
-                icon: Icons.location_on,
-                detail: 'Detail',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DealDetailPage(
-                        dealTitle: 'Urban Mobility Study',
-                        reward: '\$1.35',
-                        icon: Icons.location_on,
+              const SizedBox(height: 24),
+              Expanded(
+                child: _deals.isEmpty && !_isLoading
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.inbox_outlined,
+                              size: 64,
+                              color: Colors.white.withValues(alpha: 0.3),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No deals available',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: _deals.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final deal = _deals[index];
+                          return _MarketCard(
+                            deal: deal,
+                            icon: _getIconForDataType(deal.dealMeta?.dataType),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DealDetailPage(
+                                    dealId: deal.dealId,
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
                       ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              _MarketCard(
-                reward: '\$0.80',
-                title: 'App Usage Trend',
-                subtitle: 'App open patterns',
-                icon: Icons.apps,
-                detail: 'Detail',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DealDetailPage(
-                        dealTitle: 'App Usage Trend',
-                        reward: '\$0.80',
-                        icon: Icons.apps,
-                      ),
-                    ),
-                  );
-                },
               ),
             ],
           ),
@@ -73,25 +159,52 @@ class MarketPlacePage extends StatelessWidget {
 }
 
 class _MarketCard extends StatelessWidget {
-  final String reward;
-  final String title;
-  final String subtitle;
+  final Deal deal;
   final IconData icon;
-  final String detail;
   final VoidCallback? onTap;
 
   const _MarketCard({
-    required this.reward,
-    required this.title,
-    required this.subtitle,
+    required this.deal,
     required this.icon,
-    required this.detail,
     this.onTap,
   });
+
+  String _formatDuration(DateTime createdAt) {
+    final now = DateTime.now();
+    final diff = now.difference(createdAt);
+    
+    if (diff.inDays > 0) {
+      return '${diff.inDays}d ago';
+    } else if (diff.inHours > 0) {
+      return '${diff.inHours}h ago';
+    } else if (diff.inMinutes > 0) {
+      return '${diff.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  String _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'created':
+        return 'New';
+      case 'accepted':
+        return 'Active';
+      case 'completed':
+        return 'Done';
+      default:
+        return status;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final price = deal.dealMeta?.price ?? '0';
+    final currency = deal.dealMeta?.currency ?? 'SOL';
+    final dataType = deal.dealMeta?.dataType ?? 'Data';
+    final description = deal.dealMeta?.requestDescription ?? 'No description';
+    
     return Card(
       color: Colors.white.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(borderRadius: AppRadius.largeRadius),
@@ -109,32 +222,61 @@ class _MarketCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '$reward Reward',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '$price $currency Reward',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            _getStatusColor(deal.status),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.greenAccent,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      title,
+                      dataType,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text(
-                          subtitle,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.tealAccent,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      description,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatDuration(deal.createdAt),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.tealAccent,
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:zdatar_mobile/screens/wallet_page.dart';
 import 'models/app_state.dart';
 import 'screens/home_page.dart';
@@ -9,7 +10,10 @@ import 'theme/app_theme.dart';
 import 'screens/profile_page.dart';
 import 'screens/notification_page.dart';
 
-void main() {
+Future<void> main() async {
+  // Load .env file
+  await dotenv.load(fileName: ".env");
+  
   runApp(MyApp());
 }
 
