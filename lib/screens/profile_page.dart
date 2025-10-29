@@ -253,7 +253,7 @@ class ProfilePage extends StatelessWidget {
             onChanged: (value) async {
               await appState.toggleDeveloperMode();
             },
-            activeColor: theme.colorScheme.secondary,
+            activeThumbColor: theme.colorScheme.secondary,
           ),
         ],
       ),

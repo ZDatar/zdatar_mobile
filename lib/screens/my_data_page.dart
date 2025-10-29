@@ -321,7 +321,7 @@ class _MyDataPageState extends State<MyDataPage> {
                               });
                               _saveSettings();
                             },
-                            activeColor: Colors.green,
+                            activeThumbColor: Colors.green,
                             activeTrackColor: Colors.green.withValues(
                               alpha: 0.3,
                             ),
@@ -495,7 +495,7 @@ class _MyDataPageState extends State<MyDataPage> {
                       _saveSettings();
                     }
                   : null,
-              activeColor: Colors.green,
+              activeThumbColor: Colors.green,
               activeTrackColor: Colors.green.withValues(alpha: 0.3),
               inactiveThumbColor: Colors.grey,
               inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),

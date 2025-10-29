@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/deal.dart';
 import '../services/deals_service.dart';
+import '../services/solana_wallet_service.dart';
 
 class DealDetailPage extends StatefulWidget {
   final String dealId;
@@ -19,6 +20,7 @@ class DealDetailPage extends StatefulWidget {
 
 class _DealDetailPageState extends State<DealDetailPage> {
   final DealsService _dealsService = DealsService();
+  final SolanaWalletService _walletService = SolanaWalletService();
   Deal? _deal;
   bool _isLoading = true;
   bool _isAccepting = false;
@@ -49,29 +51,58 @@ class _DealDetailPageState extends State<DealDetailPage> {
       _isAccepting = true;
     });
 
-    // TODO: Replace with actual seller wallet from user profile/authentication
-    const sellerWallet = 'YOUR_WALLET_ADDRESS_HERE';
-    
-    final success = await _dealsService.acceptDeal(widget.dealId, sellerWallet);
-    
-    if (mounted) {
-      setState(() {
-        _isAccepting = false;
-      });
+    try {
+      // Get actual seller wallet address from wallet service
+      await _walletService.initialize();
+      final hasWallet = await _walletService.hasWallet();
+      
+      if (!hasWallet) {
+        if (mounted) {
+          setState(() => _isAccepting = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please create a wallet first to accept deals'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+      
+      await _walletService.getEd25519PublicKey();
+      final sellerWallet = _walletService.getPublicKeyBase58();
+      
+      final success = await _dealsService.acceptDeal(widget.dealId, sellerWallet);
+      
+      if (mounted) {
+        setState(() {
+          _isAccepting = false;
+        });
 
-      if (success) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Center(child: Text('Deal accepted successfully!')),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Refresh deal details
+          _fetchDealDetails();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Center(child: Text('Failed to accept deal')),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isAccepting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Center(child: Text('Deal accepted successfully!')),
-            backgroundColor: Colors.green,
-          ),
-        );
-        // Refresh deal details
-        _fetchDealDetails();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Center(child: Text('Failed to accept deal')),
+          SnackBar(
+            content: Text('Error: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -251,13 +282,13 @@ class _DealDetailPageState extends State<DealDetailPage> {
                       const SizedBox(height: 12),
                       _InfoRow(
                         label: 'Deal ID',
-                        value: deal.dealId.substring(0, 8) + '...',
+                        value: '${deal.dealId.substring(0, 8)}...',
                         theme: theme,
                       ),
                       const SizedBox(height: 8),
                       _InfoRow(
                         label: 'Buyer Wallet',
-                        value: deal.buyerWallet.substring(0, 8) + '...',
+                        value: '${deal.buyerWallet.substring(0, 8)}...',
                         theme: theme,
                       ),
                       const SizedBox(height: 8),
@@ -277,7 +308,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
                       const SizedBox(height: 8),
                       _InfoRow(
                         label: 'Transaction',
-                        value: deal.solanaTxHash.substring(0, 8) + '...',
+                        value: '${deal.solanaTxHash.substring(0, 8)}...',
                         theme: theme,
                       ),
                       if (deal.dealMeta?.dataCategory != null) ...[

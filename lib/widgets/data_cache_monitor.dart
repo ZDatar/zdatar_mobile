@@ -227,20 +227,23 @@ class _DataCacheMonitorState extends State<DataCacheMonitor> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () async {
+                  // Capture context before any async operations
+                  final messenger = ScaffoldMessenger.of(context);
+                  
                   final confirmed = await showDialog<bool>(
                     context: context,
-                    builder: (context) => AlertDialog(
+                    builder: (dialogContext) => AlertDialog(
                       title: const Text('Clear Cache?'),
                       content: const Text(
                         'This will delete all cached data. This action cannot be undone.',
                       ),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context, false),
+                          onPressed: () => Navigator.pop(dialogContext, false),
                           child: const Text('Cancel'),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pop(context, true),
+                          onPressed: () => Navigator.pop(dialogContext, true),
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.red,
                           ),
@@ -254,7 +257,7 @@ class _DataCacheMonitorState extends State<DataCacheMonitor> {
                     await _cacheService.clearAllData();
                     await _loadStats();
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         const SnackBar(
                           content: Text('Cache cleared successfully'),
                         ),

@@ -14,13 +14,13 @@ import 'services/data_cache_service.dart';
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load .env file
   await dotenv.load(fileName: ".env");
-  
+
   // Initialize data cache service
   await DataCacheService().initialize();
-  
+
   runApp(MyApp());
 }
 

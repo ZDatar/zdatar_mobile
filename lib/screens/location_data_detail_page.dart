@@ -80,7 +80,7 @@ class _LocationDataDetailPageState extends State<LocationDataDetailPage> {
                                 _isSharingEnabled = value;
                               });
                             },
-                            activeColor: Colors.blue,
+                            activeThumbColor: Colors.blue,
                             activeTrackColor: Colors.blue.withValues(
                               alpha: 0.3,
                             ),

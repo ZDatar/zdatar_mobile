@@ -53,8 +53,8 @@ class SolanaWalletService {
       final seed = bip39.mnemonicToSeed(mnemonic);
       
       // Derive Ed25519 keypair using BIP44 path for Solana: m/44'/501'/0'/0'
-      final masterKey = ED25519_HD_KEY.getMasterKeyFromSeed(seed);
-      final derivedKey = ED25519_HD_KEY.derivePath("m/44'/501'/0'/0'", seed);
+      final derivedKey =
+          await ED25519_HD_KEY.derivePath("m/44'/501'/0'/0'", seed);
       
       // Extract private and public keys (Ed25519)
       final privateKey = Uint8List.fromList(derivedKey.key);
@@ -99,7 +99,8 @@ class SolanaWalletService {
       final seed = bip39.mnemonicToSeed(mnemonic);
       
       // Derive Ed25519 keypair
-      final derivedKey = ED25519_HD_KEY.derivePath("m/44'/501'/0'/0'", seed);
+      final derivedKey =
+          await ED25519_HD_KEY.derivePath("m/44'/501'/0'/0'", seed);
       final privateKey = Uint8List.fromList(derivedKey.key);
       
       // Derive public key
