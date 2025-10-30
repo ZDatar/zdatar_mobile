@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
+import 'package:logger/logger.dart';
 import '../config/api_config.dart';
 
 /// Service for uploading encrypted datasets to IPFS and Azure Storage
 class StorageService {
   final ApiConfig _config = ApiConfig();
+  final Logger _logger = Logger();
 
   /// Upload encrypted dataset to IPFS
   /// Returns the IPFS CID (Content Identifier) on success
@@ -39,18 +41,30 @@ class StorageService {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final cid = data['Hash'] as String?;
+        // IPFS returns NDJSON (newline-delimited JSON)
+        // Each line is a separate JSON object
+        final lines = response.body.trim().split('\n');
         
-        if (cid != null) {
-          print('✅ Uploaded to IPFS: $cid');
-          return cid;
+        // Parse the last line which contains the final result
+        if (lines.isNotEmpty) {
+          try {
+            final data = jsonDecode(lines.last);
+            final cid = data['Hash'] as String?;
+            
+            if (cid != null) {
+              _logger.i('✅ Uploaded to IPFS: $cid');
+              return cid;
+            }
+          } catch (e) {
+            _logger.w('⚠️ Failed to parse IPFS response: $e');
+            _logger.d('Response body: ${response.body}');
+          }
         }
       }
 
       throw Exception('IPFS upload failed: ${response.statusCode} - ${response.body}');
     } catch (e) {
-      print('❌ IPFS upload error: $e');
+      _logger.e('❌ IPFS upload error: $e');
       rethrow;
     }
   }
@@ -98,7 +112,9 @@ class StorageService {
         headers,
         encryptedData.length,
       );
-
+      
+      _logger.d('🔐 Azure headers: $headers');
+      
       final response = await http.put(
         url,
         headers: headers,
@@ -106,14 +122,15 @@ class StorageService {
       );
 
       if (response.statusCode == 201) {
-        final blobUrl = url.toString();
-        print('✅ Uploaded to Azure: $blobUrl');
-        return blobUrl;
+        final url = response.headers['location'] ?? 
+                    'https://$account.blob.core.windows.net/$container/$finalBlobName';
+        _logger.i('✅ Uploaded to Azure: $url');
+        return url;
       }
 
       throw Exception('Azure upload failed: ${response.statusCode} - ${response.body}');
     } catch (e) {
-      print('❌ Azure upload error: $e');
+      _logger.e('❌ Azure upload error: $e');
       rethrow;
     }
   }
@@ -135,7 +152,7 @@ class StorageService {
         metadata: metadata,
       );
     } catch (e) {
-      print('⚠️ IPFS upload failed, continuing with Azure: $e');
+      _logger.w('⚠️ IPFS upload failed, continuing with Azure: $e');
     }
 
     // Upload to Azure
@@ -146,16 +163,29 @@ class StorageService {
         metadata: metadata?.map((k, v) => MapEntry(k, v.toString())),
       );
     } catch (e) {
-      print('⚠️ Azure upload failed: $e');
+      _logger.w('⚠️ Azure upload failed: $e');
     }
 
+    // Require at least one successful upload
     if (ipfsCid == null && azureUrl == null) {
-      throw Exception('Failed to upload to both IPFS and Azure');
+      throw Exception(
+        'Failed to upload to storage.\n'
+        'IPFS: Not configured or failed\n'
+        'Azure: Not configured or failed\n'
+        'Please configure at least one storage option in .env'
+      );
+    }
+
+    if (ipfsCid != null) {
+      _logger.i('✅ Using IPFS storage: $ipfsCid');
+    }
+    if (azureUrl != null) {
+      _logger.i('✅ Using Azure storage: $azureUrl');
     }
 
     return {
-      'ipfs': ipfsCid,
-      'azure': azureUrl,
+      'ipfs': ipfsCid ?? 'not_uploaded',
+      'azure': azureUrl ?? 'not_uploaded',
     };
   }
 
@@ -180,6 +210,8 @@ class StorageService {
     final accessKey = _config.azureStorageAccessKey;
     final canonicalizedHeaders = _buildCanonicalizedHeaders(headers);
     final canonicalizedResource = '/$account/$container/$blobName';
+    
+    _logger.d('🔑 Generating Azure auth signature...');
     
     final stringToSign = [
       method,
@@ -233,7 +265,7 @@ class StorageService {
 
       throw Exception('IPFS retrieval failed: ${response.statusCode}');
     } catch (e) {
-      print('❌ IPFS retrieval error: $e');
+      _logger.e('❌ IPFS retrieval error: $e');
       rethrow;
     }
   }
@@ -249,7 +281,7 @@ class StorageService {
 
       throw Exception('Azure retrieval failed: ${response.statusCode}');
     } catch (e) {
-      print('❌ Azure retrieval error: $e');
+      _logger.e('❌ Azure retrieval error: $e');
       rethrow;
     }
   }

@@ -1,8 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/deal.dart';
 import '../services/deals_service.dart';
 import '../services/solana_wallet_service.dart';
+import '../services/storage_service.dart';
 
 class DealDetailPage extends StatefulWidget {
   final String dealId;
@@ -21,6 +24,7 @@ class DealDetailPage extends StatefulWidget {
 class _DealDetailPageState extends State<DealDetailPage> {
   final DealsService _dealsService = DealsService();
   final SolanaWalletService _walletService = SolanaWalletService();
+  final StorageService _storageService = StorageService();
   Deal? _deal;
   bool _isLoading = true;
   bool _isAccepting = false;
@@ -51,15 +55,18 @@ class _DealDetailPageState extends State<DealDetailPage> {
       _isAccepting = true;
     });
 
+    // Capture messenger before async operations
+    final messenger = ScaffoldMessenger.of(context);
+
     try {
-      // Get actual seller wallet address from wallet service
+      // Step 1: Verify wallet exists (seller wallet)
       await _walletService.initialize();
       final hasWallet = await _walletService.hasWallet();
       
       if (!hasWallet) {
         if (mounted) {
           setState(() => _isAccepting = false);
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(
               content: Text('Please create a wallet first to accept deals'),
               backgroundColor: Colors.orange,
@@ -72,35 +79,204 @@ class _DealDetailPageState extends State<DealDetailPage> {
       await _walletService.getEd25519PublicKey();
       final sellerWallet = _walletService.getPublicKeyBase58();
       
-      final success = await _dealsService.acceptDeal(widget.dealId, sellerWallet);
+      debugPrint('🔍 Accepting deal ${widget.dealId} as seller with wallet: $sellerWallet');
+      
+      // Step 2: Show progress dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Preparing dataset...'),
+              ],
+            ),
+          ),
+        );
+      }
+      
+      // Step 3: Collect and prepare dataset
+      // PRODUCTION: Implement DataCollectionService to gather real user data
+      // based on deal.dealMeta.dataCategory and deal.dealMeta.dataSubcategories
+      // For now, we'll create a placeholder dataset for testing
+      final datasetCsv = _createPlaceholderDatasetCsv(_deal!);
+      final datasetBytes = Uint8List.fromList(utf8.encode(datasetCsv));
+      
+      debugPrint('📦 Dataset collected: ${datasetBytes.length} bytes (CSV format)');
+      
+      // Step 4: Encrypt dataset
+      // PRODUCTION: Implement AES-256-GCM encryption using cryptography package
+      // Generate random AES key, encrypt dataset, store key for wrapping
+      final encryptedDataset = datasetBytes; // Placeholder: should be encrypted with AES-256
+      
+      debugPrint('🔐 Dataset encrypted (placeholder - implement AES-256-GCM)');
+      
+      // Step 5: Upload to IPFS and Azure
+      if (mounted) {
+        Navigator.of(context).pop(); // Close preparing dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Uploading to IPFS and Azure...'),
+              ],
+            ),
+          ),
+        );
+      }
+      
+      final uploadResult = await _storageService.uploadToBoth(
+        encryptedDataset,
+        filename: 'deal_${widget.dealId}_${DateTime.now().millisecondsSinceEpoch}.csv.enc',
+        metadata: {
+          'dealId': widget.dealId,
+          'sellerWallet': sellerWallet,
+          'timestamp': DateTime.now().toUtc().toIso8601String(),
+          'format': 'csv',
+          'contentType': 'text/csv',
+        },
+      );
+      
+      final ipfsCid = uploadResult['ipfs'] ?? 'not_uploaded';
+      final azureUrl = uploadResult['azure'] ?? 'not_uploaded';
+      
+      // At least one must have succeeded (checked in StorageService)
+      debugPrint('☁️ IPFS: $ipfsCid');
+      debugPrint('☁️ Azure: $azureUrl');
+      
+      // Step 6: Generate data hash
+      final dataHash = _storageService.generateHash(encryptedDataset);
+      debugPrint('🔑 Data hash: $dataHash');
+      
+      // Step 7: Generate encrypted AES key
+      final encryptedAesKey = _generatePlaceholderEncryptedKey(
+        buyerPubkey: _deal!.buyerWallet,
+        sellerPubkey: sellerWallet,
+      );
+      
+      // Step 8: Create dataset in backend
+      if (mounted) {
+        Navigator.of(context).pop(); // Close upload dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Creating dataset record...'),
+              ],
+            ),
+          ),
+        );
+      }
+      
+      final dealMeta = _deal!.dealMeta;
+      final createDatasetResult = await _dealsService.createDataset(
+        name: '${dealMeta?.dataCategory ?? "Data"} for Deal ${widget.dealId.substring(0, 8)}',
+        description: dealMeta?.requestDescription ?? 'Dataset for accepted deal',
+        price: double.tryParse(dealMeta?.price ?? '0') ?? 0.0,
+        currency: dealMeta?.currency ?? 'SOL',
+        ipfsCid: ipfsCid,
+        fileUrl: azureUrl,
+        dataHash: dataHash,
+        encryptedAesKey: encryptedAesKey,
+        ownerWalletPubkey: sellerWallet,
+        dataStartTime: DateTime.now().toUtc().subtract(const Duration(days: 7)).toIso8601String(),
+        dataEndTime: DateTime.now().toUtc().toIso8601String(),
+        dataMeta: {
+          'dealId': widget.dealId,
+          'fields': dealMeta?.dataFieldsRequired ?? [],
+          'category': dealMeta?.dataCategory ?? 'General',
+          'data_type': dealMeta?.dataType ?? 'General',
+        },
+        fileSize: encryptedDataset.length,
+        tags: dealMeta?.dataSubcategories ?? [],
+      );
+      
+      if (createDatasetResult['success'] != true) {
+        throw Exception(createDatasetResult['error'] ?? 'Failed to create dataset');
+      }
+      
+      final datasetData = createDatasetResult['data'] as Map<String, dynamic>;
+      final datasetId = datasetData['dataset_id'] as String;
+      
+      debugPrint('✅ Dataset created with ID: $datasetId');
+      
+      // Step 9: Accept the deal with dataset_id
+      if (mounted) {
+        Navigator.of(context).pop(); // Close dataset creation dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Accepting deal...'),
+              ],
+            ),
+          ),
+        );
+      }
+      
+      final result = await _dealsService.acceptDeal(
+        widget.dealId,
+        sellerWallet,
+        datasetId,
+        encryptedAesKey,
+      );
+      
+      // Close progress dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
       
       if (mounted) {
         setState(() {
           _isAccepting = false;
         });
 
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
+        if (result['success'] == true) {
+          debugPrint('✅ Deal accepted successfully!');
+          messenger.showSnackBar(
             const SnackBar(
-              content: Center(child: Text('Deal accepted successfully!')),
+              content: Center(child: Text('✅ Deal accepted successfully!')),
               backgroundColor: Colors.green,
             ),
           );
           // Refresh deal details
-          _fetchDealDetails();
+          await _fetchDealDetails();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Center(child: Text('Failed to accept deal')),
+          final errorMsg = result['error'] ?? 'Failed to accept deal';
+          debugPrint('❌ Deal acceptance failed: $errorMsg');
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text('Failed: $errorMsg'),
               backgroundColor: Colors.red,
             ),
           );
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ Exception accepting deal: $e');
+      debugPrint('Stack trace: $stackTrace');
       if (mounted) {
         setState(() => _isAccepting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
             backgroundColor: Colors.red,
@@ -108,6 +284,93 @@ class _DealDetailPageState extends State<DealDetailPage> {
         );
       }
     }
+  }
+
+  /// Create a placeholder dataset in CSV format based on deal requirements
+  /// 
+  /// PRODUCTION IMPLEMENTATION REQUIRED:
+  /// Replace with DataCollectionService that:
+  /// 1. Reads deal.dealMeta.dataCategory (e.g., 'Health', 'Location')
+  /// 2. Reads deal.dealMeta.dataSubcategories (e.g., ['steps', 'heart_rate'])
+  /// 3. Reads deal.dealMeta.dataFieldsRequired
+  /// 4. Collects actual sensor/HealthKit/location data from device
+  /// 5. Formats as CSV with proper headers and data rows
+  String _createPlaceholderDatasetCsv(Deal deal) {
+    final dealMeta = deal.dealMeta;
+    final now = DateTime.now();
+    
+    debugPrint('⚠️ Using placeholder CSV dataset - implement actual data collection!');
+    
+    // Generate CSV format with metadata header and data rows
+    final csvBuffer = StringBuffer();
+    
+    // Metadata section (as comments)
+    csvBuffer.writeln('# ZDatar Dataset Export');
+    csvBuffer.writeln('# Deal ID: ${deal.dealId}');
+    csvBuffer.writeln('# Category: ${dealMeta?.dataCategory ?? 'General'}');
+    csvBuffer.writeln('# Subcategories: ${(dealMeta?.dataSubcategories ?? []).join(', ')}');
+    csvBuffer.writeln('# Required Fields: ${(dealMeta?.dataFieldsRequired ?? []).join(', ')}');
+    csvBuffer.writeln('# Collected At: ${now.toUtc().toIso8601String()}');
+    csvBuffer.writeln('# Version: 1.0');
+    csvBuffer.writeln('#');
+    
+    // CSV Header row
+    final fields = dealMeta?.dataFieldsRequired ?? ['timestamp', 'value', 'unit'];
+    csvBuffer.writeln(fields.join(','));
+    
+    // CSV Data rows (placeholder data)
+    // In production, this would be real collected data
+    for (int i = 0; i < 5; i++) {
+      final timestamp = now.toUtc().subtract(Duration(hours: i)).toIso8601String();
+      if (fields.contains('timestamp')) {
+        final row = <String>[];
+        for (final field in fields) {
+          switch (field.toLowerCase()) {
+            case 'timestamp':
+              row.add(timestamp);
+              break;
+            case 'value':
+              row.add('${100 + i}');
+              break;
+            case 'unit':
+              row.add('bpm');
+              break;
+            default:
+              row.add('placeholder_$field');
+          }
+        }
+        csvBuffer.writeln(row.join(','));
+      }
+    }
+    
+    return csvBuffer.toString();
+  }
+
+  /// Generate a placeholder encrypted AES key
+  /// 
+  /// PRODUCTION IMPLEMENTATION REQUIRED:
+  /// Implement proper JWE encryption:
+  /// 1. Generate random AES-256 key for dataset encryption
+  /// 2. Convert Ed25519 wallet keys to X25519 for ECDH
+  /// 3. Use X25519-HKDF-SHA256 key agreement
+  /// 4. Wrap AES key for both buyer and seller
+  /// 5. Return Base64-encoded JWE structure
+  /// 
+  /// Reference: Use cryptography package for AES-GCM and X25519 ECDH
+  String _generatePlaceholderEncryptedKey({
+    required String buyerPubkey,
+    required String sellerPubkey,
+  }) {
+    // This is a placeholder. In production, you should:
+    // 1. Generate a random AES-256 key
+    // 2. Encrypt it with buyer's public key (for buyer to decrypt)
+    // 3. Encrypt it with seller's public key (for seller to decrypt)
+    // 4. Return the JWE (JSON Web Encryption) formatted result
+    
+    debugPrint('⚠️ Using placeholder encrypted key - implement proper encryption!');
+    
+    // Return a mock JWE structure matching the backend's expected format
+    return 'eyJhYWRfZXh0IjoiZEdWemRGOWtZWFJoYzJWMFgyVnVZM0o1Y0hSbFpDNWlhVzQ9IixcImFlYWRcIjpcIkFFU0dDTS0yNTZcIixcImNpcGhlcnRleHRcIjpcInBsYWNlaG9sZGVyXCIsXCJub25jZVwiOlwicGxhY2Vob2xkZXJcIixcInJlY2lwaWVudHNcIjpbe1wiZXBoX3B1YlwiOlwiJHtidXllclB1YmtleS5zdWJzdHJpbmcoMCwgMTApfVwiLFwia2VtXCI6XCJYMjU1MTktSEtERi1TSEEyNTZcIixcImtpZFwiOlwiYnV5ZXJcIn0se1wiZXBoX3B1YlwiOlwiJHtzZWxsZXJQdWJrZXkuc3Vic3RyaW5nKDAsIDEwKX1cIixcImtlbVwiOlwiWDI1NTE5LUhLREYtU0hBMjU2XCIsXCJraWRcIjpcInNlbGxlclwifV0sXCJ2ZXJcIjpcIjFcIn0=';
   }
 
   @override

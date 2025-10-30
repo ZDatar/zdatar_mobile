@@ -34,10 +34,10 @@ class Deal {
       datasetId: json['dataset_id'] as String?,
       solanaTxHash: json['solana_tx_hash'] as String,
       icon: json['icon'] as String? ?? '📊',
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toUtc(),
+      updatedAt: DateTime.parse(json['updated_at'] as String).toUtc(),
       expiresAt: json['expires_at'] != null 
-          ? DateTime.parse(json['expires_at'] as String)
+          ? DateTime.parse(json['expires_at'] as String).toUtc()
           : null,
       dealMeta: json['deal_meta'] != null
           ? DealMeta.fromJson(json['deal_meta'] as Map<String, dynamic>)
@@ -54,9 +54,9 @@ class Deal {
       'dataset_id': datasetId,
       'solana_tx_hash': solanaTxHash,
       'icon': icon,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-      'expires_at': expiresAt?.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
+      'expires_at': expiresAt?.toUtc().toIso8601String(),
       'deal_meta': dealMeta?.toJson(),
     };
   }
