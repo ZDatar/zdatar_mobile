@@ -314,33 +314,50 @@ class _DealDetailPageState extends State<DealDetailPage> {
     csvBuffer.writeln('# Version: 1.0');
     csvBuffer.writeln('#');
     
-    // CSV Header row
-    final fields = dealMeta?.dataFieldsRequired ?? ['timestamp', 'value', 'unit'];
-    csvBuffer.writeln(fields.join(','));
+    // CSV Header row - Always include timestamp as first column
+    final fields = dealMeta?.dataFieldsRequired ?? ['value', 'unit'];
+    csvBuffer.writeln('timestamp,${fields.join(',')}');
     
     // CSV Data rows (placeholder data)
     // In production, this would be real collected data
     for (int i = 0; i < 5; i++) {
-      final timestamp = now.toUtc().subtract(Duration(hours: i)).toIso8601String();
-      if (fields.contains('timestamp')) {
-        final row = <String>[];
-        for (final field in fields) {
-          switch (field.toLowerCase()) {
-            case 'timestamp':
-              row.add(timestamp);
-              break;
-            case 'value':
-              row.add('${100 + i}');
-              break;
-            case 'unit':
-              row.add('bpm');
-              break;
-            default:
-              row.add('placeholder_$field');
-          }
+      final row = <String>[];
+      
+      // Add Unix timestamp in milliseconds as first column
+      final rowTimestamp = now.toUtc().subtract(Duration(hours: i));
+      final unixTimestampMs = rowTimestamp.millisecondsSinceEpoch;
+      row.add('$unixTimestampMs');
+      
+      for (final field in fields) {
+        // Generate placeholder data based on field name patterns
+        final fieldLower = field.toLowerCase();
+        
+        if (fieldLower.contains('_mbps') || fieldLower.contains('download') || fieldLower.contains('upload')) {
+          row.add('${50 + i * 5}.$i'); // Network speed placeholder
+        } else if (fieldLower.contains('latency') || fieldLower.contains('_ms')) {
+          row.add('${20 + i}'); // Latency placeholder
+        } else if (fieldLower.contains('signal') || fieldLower.contains('bars')) {
+          row.add('${4 - (i % 4)}'); // Signal strength placeholder
+        } else if (fieldLower.contains('battery') || fieldLower.contains('level')) {
+          row.add('${85 - i * 2}'); // Battery level placeholder
+        } else if (fieldLower.contains('percent') || fieldLower.contains('distribution')) {
+          row.add('${20 + i * 3}.$i'); // Percentage placeholder
+        } else if (fieldLower.contains('count') || fieldLower.contains('number')) {
+          row.add('${100 + i * 10}'); // Count placeholder
+        } else if (fieldLower.contains('enabled') || fieldLower.contains('charging') || fieldLower.contains('saver')) {
+          row.add(i % 2 == 0 ? 'true' : 'false'); // Boolean placeholder
+        } else if (fieldLower.contains('status') || fieldLower.contains('state') || fieldLower.contains('type')) {
+          row.add('active'); // Status placeholder
+        } else if (fieldLower.contains('latitude') || fieldLower.contains('longitude')) {
+          row.add('${1.2649 + i * 0.001}'); // Coordinate placeholder
+        } else if (fieldLower.contains('_x') || fieldLower.contains('_y') || fieldLower.contains('_z')) {
+          row.add('${(i - 2) * 0.5}'); // Sensor axis placeholder
+        } else {
+          row.add('placeholder_$i'); // Generic placeholder
         }
-        csvBuffer.writeln(row.join(','));
       }
+      
+      csvBuffer.writeln(row.join(','));
     }
     
     return csvBuffer.toString();
