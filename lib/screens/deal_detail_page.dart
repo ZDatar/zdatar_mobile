@@ -6,6 +6,7 @@ import '../models/deal.dart';
 import '../services/deals_service.dart';
 import '../services/solana_wallet_service.dart';
 import '../services/storage_service.dart';
+import '../services/encryption_service.dart';
 
 class DealDetailPage extends StatefulWidget {
   final String dealId;
@@ -25,6 +26,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
   final DealsService _dealsService = DealsService();
   final SolanaWalletService _walletService = SolanaWalletService();
   final StorageService _storageService = StorageService();
+  final EncryptionService _encryptionService = EncryptionService();
   Deal? _deal;
   bool _isLoading = true;
   bool _isAccepting = false;
@@ -108,12 +110,20 @@ class _DealDetailPageState extends State<DealDetailPage> {
       
       debugPrint('📦 Dataset collected: ${datasetBytes.length} bytes (CSV format)');
       
-      // Step 4: Encrypt dataset
-      // PRODUCTION: Implement AES-256-GCM encryption using cryptography package
-      // Generate random AES key, encrypt dataset, store key for wrapping
-      final encryptedDataset = datasetBytes; // Placeholder: should be encrypted with AES-256
+      // Step 4: Encrypt dataset with AES-256-GCM for multiple recipients
+      final encryptionEnvelope = await _encryptionService.encryptForRecipients(
+        data: datasetBytes,
+        recipientSolanaPublicKeys: [
+          _deal!.buyerWallet,   // Buyer can decrypt
+          sellerWallet,         // Seller can decrypt
+        ],
+      );
       
-      debugPrint('🔐 Dataset encrypted (placeholder - implement AES-256-GCM)');
+      // Extract encrypted data for upload
+      final encryptedDataset = base64Decode(encryptionEnvelope.ciphertext);
+      
+      debugPrint('🔐 Dataset encrypted with AES-256-GCM: ${encryptedDataset.length} bytes');
+      debugPrint('🔑 Created ${encryptionEnvelope.wraps.length} key wraps for multi-recipient access');
       
       // Step 5: Upload to IPFS and Azure
       if (mounted) {
@@ -157,11 +167,13 @@ class _DealDetailPageState extends State<DealDetailPage> {
       final dataHash = _storageService.generateHash(encryptedDataset);
       debugPrint('🔑 Data hash: $dataHash');
       
-      // Step 7: Generate encrypted AES key
-      final encryptedAesKey = _generatePlaceholderEncryptedKey(
-        buyerPubkey: _deal!.buyerWallet,
-        sellerPubkey: sellerWallet,
-      );
+      // Step 7: Serialize encryption envelope and base64-encode for backend
+      final envelopeJson = encryptionEnvelope.toJsonString();
+      final encryptedAesKey = base64Encode(utf8.encode(envelopeJson));
+      
+      debugPrint('📦 Encryption envelope JSON: ${envelopeJson.length} bytes');
+      debugPrint('📦 Encrypted AES key (base64): ${encryptedAesKey.length} bytes');
+      debugPrint('✅ Multi-recipient encryption complete (buyer + seller)');
       
       // Step 8: Create dataset in backend
       if (mounted) {
@@ -361,33 +373,6 @@ class _DealDetailPageState extends State<DealDetailPage> {
     }
     
     return csvBuffer.toString();
-  }
-
-  /// Generate a placeholder encrypted AES key
-  /// 
-  /// PRODUCTION IMPLEMENTATION REQUIRED:
-  /// Implement proper JWE encryption:
-  /// 1. Generate random AES-256 key for dataset encryption
-  /// 2. Convert Ed25519 wallet keys to X25519 for ECDH
-  /// 3. Use X25519-HKDF-SHA256 key agreement
-  /// 4. Wrap AES key for both buyer and seller
-  /// 5. Return Base64-encoded JWE structure
-  /// 
-  /// Reference: Use cryptography package for AES-GCM and X25519 ECDH
-  String _generatePlaceholderEncryptedKey({
-    required String buyerPubkey,
-    required String sellerPubkey,
-  }) {
-    // This is a placeholder. In production, you should:
-    // 1. Generate a random AES-256 key
-    // 2. Encrypt it with buyer's public key (for buyer to decrypt)
-    // 3. Encrypt it with seller's public key (for seller to decrypt)
-    // 4. Return the JWE (JSON Web Encryption) formatted result
-    
-    debugPrint('⚠️ Using placeholder encrypted key - implement proper encryption!');
-    
-    // Return a mock JWE structure matching the backend's expected format
-    return 'eyJhYWRfZXh0IjoiZEdWemRGOWtZWFJoYzJWMFgyVnVZM0o1Y0hSbFpDNWlhVzQ9IixcImFlYWRcIjpcIkFFU0dDTS0yNTZcIixcImNpcGhlcnRleHRcIjpcInBsYWNlaG9sZGVyXCIsXCJub25jZVwiOlwicGxhY2Vob2xkZXJcIixcInJlY2lwaWVudHNcIjpbe1wiZXBoX3B1YlwiOlwiJHtidXllclB1YmtleS5zdWJzdHJpbmcoMCwgMTApfVwiLFwia2VtXCI6XCJYMjU1MTktSEtERi1TSEEyNTZcIixcImtpZFwiOlwiYnV5ZXJcIn0se1wiZXBoX3B1YlwiOlwiJHtzZWxsZXJQdWJrZXkuc3Vic3RyaW5nKDAsIDEwKX1cIixcImtlbVwiOlwiWDI1NTE5LUhLREYtU0hBMjU2XCIsXCJraWRcIjpcInNlbGxlclwifV0sXCJ2ZXJcIjpcIjFcIn0=';
   }
 
   @override
