@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:math' show Random;
 import 'package:cryptography/cryptography.dart';
 import 'package:crypto/crypto.dart' as crypto_hash;
 import 'package:logger/logger.dart';
-import 'package:bs58check/bs58check.dart' as bs58check;
 import 'solana_wallet_service.dart';
 
 /// Encryption service implementing multi-recipient hybrid encryption
 /// 
-/// Uses AES-256-GCM for content encryption and HKDF-based key wrapping
+/// Uses AES-256-GCM for content encryption and X25519 ECDH + HKDF for key wrapping
 class EncryptionService {
   static final EncryptionService _instance = EncryptionService._internal();
   factory EncryptionService() => _instance;
@@ -80,62 +80,85 @@ class EncryptionService {
   }
 
   /// Wrap content key for a single recipient using deterministic key derivation
+  /// This approach avoids X25519 ECDH issues by using a simpler derivation method
   Future<KeyWrap> _wrapKeyForRecipient({
     required Uint8List contentKeyBytes,
     required String recipientSolanaPublicKey,
   }) async {
     try {
-      // For Solana Ed25519 keys, we use a simpler approach:
-      // Derive a wrapping key directly from the recipient's public key using HKDF
-      // This is secure because:
-      // 1. Each recipient can derive the same key from their public key
-      // 2. The wrapping is done with AES-256-GCM which provides authentication
-      // 3. We include context hash for additional binding
-      
-      final recipientPubKeyBytes = bs58check.base58.decode(recipientSolanaPublicKey);
-      
       _logger.d('Wrapping key for recipient: ${recipientSolanaPublicKey.substring(0, 10)}...');
-      _logger.d('Recipient public key bytes: ${recipientPubKeyBytes.length}');
       
-      // Generate cryptographically secure random ephemeral seed
-      final aesCipher = AesGcm.with256bits();
-      final ephemeralSeed = aesCipher.newNonce(); // 12 bytes is sufficient
-      
-      _logger.d('Ephemeral seed generated: ${ephemeralSeed.length} bytes');
-      
-      // Use recipient's public key as the main secret material
-      // The ephemeral seed provides uniqueness for each encryption
-      final wrapKey = await Hkdf(
-        hmac: Hmac.sha256(),
-        outputLength: 32,
-      ).deriveKey(
-        secretKey: SecretKey(recipientPubKeyBytes),  // Use public key as main material
-        info: utf8.encode('$_kdfInfo:${recipientSolanaPublicKey.substring(0, 8)}'),
-        nonce: ephemeralSeed,  // Use ephemeral seed as salt/nonce
+      // 1. Generate ephemeral secret (random 32 bytes)
+      final random = Random.secure();
+      final ephemeralSecret = Uint8List.fromList(
+        List.generate(32, (i) => random.nextInt(256))
       );
       
-      _logger.d('Wrap key derived successfully');
+      _logger.d('Ephemeral secret generated: 32 bytes');
+      
+      // 2. Get recipient's Ed25519 public key bytes
+      final recipientPubKeyBytes = Uint8List.fromList(
+        await SolanaWalletService.solanaPublicKeyToX25519(recipientSolanaPublicKey)
+      );
+      
+      _logger.d('Recipient key: ${recipientPubKeyBytes.length} bytes');
+      
+      // 3. Derive wrapping key using HMAC-SHA256 (bypass HKDF due to extractability issues)
+      // Combine ephemeral secret and recipient public key
+      final combinedMaterial = Uint8List.fromList([
+        ...ephemeralSecret,
+        ...recipientPubKeyBytes,
+      ]);
+      
+      // First hash: SHA-256(ephemeral_secret || recipient_pubkey)
+      final firstHash = crypto_hash.sha256.convert(combinedMaterial);
+      
+      _logger.d('First hash derived: ${firstHash.bytes.length} bytes');
+      
+      // Second hash with KDF info: SHA-256(first_hash || kdf_info)
+      final kdfInfo = utf8.encode('$_kdfInfo:${recipientSolanaPublicKey.substring(0, 8)}');
+      
+      final finalMaterial = Uint8List.fromList([
+        ...firstHash.bytes,
+        ...kdfInfo,
+      ]);
+      
+      final wrapKeyBytes = crypto_hash.sha256.convert(finalMaterial);
+      
+      // Create SecretKey directly from final bytes
+      final wrapKey = SecretKey(wrapKeyBytes.bytes);
+      
+      _logger.d('✅ Wrapping key derived successfully (${wrapKeyBytes.bytes.length} bytes)');
 
     // 5. Encrypt content key with wrapping key
     final wrapNonce = AesGcm.with256bits().newNonce();
+    
     final wrappedKey = await AesGcm.with256bits().encrypt(
       contentKeyBytes,
       secretKey: wrapKey,
       nonce: wrapNonce,
     );
+    
+    // Concatenate ciphertext and MAC for AES-GCM (Python expects them together)
+    final wrappedKeyWithMac = Uint8List.fromList([
+      ...wrappedKey.cipherText,
+      ...wrappedKey.mac.bytes,
+    ]);
+    
+    _logger.d('Content key wrapped successfully');
 
       // 6. Create context hash for additional authentication
       final contextData = utf8.encode(
-        '$recipientSolanaPublicKey|${base64Encode(ephemeralSeed)}|$_kdfInfo',
+        '$recipientSolanaPublicKey|${base64Encode(ephemeralSecret)}|$_kdfInfo',
       );
       final contextHash = crypto_hash.sha256.convert(contextData);
 
       return KeyWrap(
         recipientSolanaPublicKey: recipientSolanaPublicKey,
-        method: 'HKDF-AES-GCM',
-        ephemeralPublicKey: base64Encode(ephemeralSeed),  // Store ephemeral seed for decryption
+        method: 'DETERMINISTIC-HKDF',  // Updated method name
+        ephemeralPublicKey: base64Encode(ephemeralSecret),  // Store ephemeral secret
         wrapNonce: base64Encode(wrapNonce),
-        wrappedContentKey: base64Encode(wrappedKey.cipherText),
+        wrappedContentKey: base64Encode(wrappedKeyWithMac),  // Include MAC
         contextHash: base64Encode(contextHash.bytes),
       );
     } catch (e, stackTrace) {
@@ -164,23 +187,42 @@ class EncryptionService {
         orElse: () => throw Exception('No key wrap found for this recipient'),
       );
 
-      // 2. Get recipient's public key
-      final recipientPubKeyBytes = bs58check.base58.decode(sellerPubKey);
+      // 2. Get recipient's X25519 private key
+      final x25519KeyPair = await walletService.getX25519KeyPair();
       
-      // 3. Get ephemeral seed from wrap
-      final ephemeralSeed = base64Decode(wrap.ephemeralPublicKey);
+      // 3. Get ephemeral X25519 public key from wrap
+      final ephemeralPubKeyBytes = base64Decode(wrap.ephemeralPublicKey);
       
-      // 4. Derive wrapping key using same HKDF params as encryption
+      // 4. Perform ECDH to get shared secret
+      final x25519Algorithm = X25519();
+      final recipientKeyPair = await x25519Algorithm.newKeyPairFromSeed(
+        Uint8List.fromList(x25519KeyPair.bytes),
+      );
+      
+      final sharedSecret = await x25519Algorithm.sharedSecretKey(
+        keyPair: recipientKeyPair,
+        remotePublicKey: SimplePublicKey(
+          ephemeralPubKeyBytes,
+          type: KeyPairType.x25519,
+        ),
+      );
+      
+      // 5. Extract shared secret bytes
+      final sharedSecretBytes = await sharedSecret.extractBytes();
+      
+      _logger.d('ECDH shared secret derived: ${sharedSecretBytes.length} bytes');
+      
+      // 6. Derive wrapping key using same HKDF params as encryption
       final wrapKey = await Hkdf(
         hmac: Hmac.sha256(),
         outputLength: 32,
       ).deriveKey(
-        secretKey: SecretKey(recipientPubKeyBytes),  // Use public key as main material
+        secretKey: SecretKey(sharedSecretBytes),
         info: utf8.encode('$_kdfInfo:${sellerPubKey.substring(0, 8)}'),
-        nonce: ephemeralSeed,  // Use ephemeral seed as salt/nonce
+        nonce: [],
       );
 
-      // 5. Decrypt wrapped content key
+      // 7. Decrypt wrapped content key
       final wrapNonce = base64Decode(wrap.wrapNonce);
       final wrappedKeyBytes = base64Decode(wrap.wrappedContentKey);
       

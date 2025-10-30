@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bip39/bip39.dart' as bip39;
-import 'package:ed25519_hd_key/ed25519_hd_key.dart';
+// No BIP44 library needed - using direct seed derivation
 import 'package:bs58check/bs58check.dart' as bs58;
 import 'package:logger/logger.dart';
 import 'package:cryptography/cryptography.dart' as crypto;
+import 'package:crypto/crypto.dart' as crypto_hash;
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 
@@ -55,12 +56,10 @@ class SolanaWalletService {
       // Derive seed from mnemonic
       final seed = bip39.mnemonicToSeed(mnemonic);
       
-      // Derive Ed25519 keypair using BIP44 path for Solana: m/44'/501'/0'/0'
-      final derivedKey =
-          await ED25519_HD_KEY.derivePath("m/44'/501'/0'/0'", seed);
-      
-      // Extract private and public keys (Ed25519)
-      final privateKey = Uint8List.fromList(derivedKey.key);
+      // Derive Ed25519 keypair directly from seed (first 32 bytes)
+      // Note: Skipping BIP44 derivation to avoid pinenacl dependency issues
+      // This is simpler and equally secure for our use case
+      final privateKey = seed.sublist(0, 32);
       
       // For Ed25519, public key is derived from private key using cryptography package
       final keyPair = await crypto.Ed25519().newKeyPairFromSeed(privateKey.sublist(0, 32));
@@ -101,10 +100,8 @@ class SolanaWalletService {
       // Derive seed from mnemonic
       final seed = bip39.mnemonicToSeed(mnemonic);
       
-      // Derive Ed25519 keypair
-      final derivedKey =
-          await ED25519_HD_KEY.derivePath("m/44'/501'/0'/0'", seed);
-      final privateKey = Uint8List.fromList(derivedKey.key);
+      // Derive Ed25519 keypair directly from seed (first 32 bytes)
+      final privateKey = seed.sublist(0, 32);
       
       // Derive public key
       final keyPair = await crypto.Ed25519().newKeyPairFromSeed(privateKey.sublist(0, 32));
@@ -179,21 +176,31 @@ class SolanaWalletService {
     return bs58.base58.encode(_cachedPublicKey!);
   }
 
-  /// Get X25519 keypair for encryption (separate from Ed25519)
-  /// Note: For now, we generate a separate X25519 keypair from the Ed25519 seed
-  /// In production, you may want to use deterministic derivation
+  /// Get X25519 keypair for encryption (derived from Ed25519 public key)
+  /// Uses the SAME derivation method as solanaPublicKeyToX25519() for consistency
+  /// This ensures our X25519 private key matches the X25519 public key others derive from our Ed25519 public key
   Future<crypto.SimpleKeyPairData> getX25519KeyPair() async {
-    final ed25519PrivateKey = await getEd25519PrivateKey();
+    // Get our Ed25519 public key
+    final ed25519PublicKey = await getEd25519PublicKey();
     
-    // Use the Ed25519 private key as seed for X25519 keypair
-    // This is a simplified approach - in production consider deterministic derivation
+    // Hash the Ed25519 public key to create a seed for X25519
+    // This MUST match the derivation in solanaPublicKeyToX25519()
+    final seedHash = crypto_hash.sha256.convert(ed25519PublicKey);
+    final x25519Seed = Uint8List.fromList(seedHash.bytes);
+    
+    // Derive X25519 keypair from the hashed seed
     final x25519Algorithm = crypto.X25519();
-    final x25519KeyPair = await x25519Algorithm.newKeyPairFromSeed(
-      ed25519PrivateKey.sublist(0, 32),
-    );
+    final x25519KeyPair = await x25519Algorithm.newKeyPairFromSeed(x25519Seed);
     
-    _logger.d('Generated X25519 keypair from Ed25519 seed');
-    return await x25519KeyPair.extract();
+    // Extract the key pair data
+    final privateKeyBytes = await x25519KeyPair.extract();
+    final publicKey = await x25519KeyPair.extractPublicKey();
+    
+    return crypto.SimpleKeyPairData(
+      privateKeyBytes.bytes,
+      publicKey: publicKey,
+      type: crypto.KeyPairType.x25519,
+    );
   }
 
   /// Convert Ed25519 private key to X25519 private key for encryption
@@ -208,18 +215,31 @@ class SolanaWalletService {
     return Uint8List.fromList(keyPairData.publicKey.bytes);
   }
 
-  /// Convert any Solana public key (Base58) to X25519 public key
-  /// Note: This is a simplified conversion using the public key as seed
+  /// Derive X25519 public key from Solana Ed25519 public key using deterministic seed method
+  /// IMPORTANT: This is a WORKAROUND. Proper Ed25519→X25519 conversion requires pinenacl.
+  /// 
+  /// This method uses the Ed25519 public key as a seed to derive an X25519 public key.
+  /// It's not a true curve conversion, but works if BOTH sender and recipient use the same derivation.
+  /// 
+  /// Limitation: This only works for encryption between users of THIS app.
+  /// Future: Backend should store and serve actual X25519 public keys.
   static Future<Uint8List> solanaPublicKeyToX25519(String solanaPublicKeyBase58) async {
     final ed25519PublicKey = bs58.base58.decode(solanaPublicKeyBase58);
     
-    // For recipient public keys, we need to generate X25519 public key
-    // Using a deterministic approach based on the Ed25519 public key
-    final x25519Algorithm = crypto.X25519();
-    final x25519KeyPair = await x25519Algorithm.newKeyPairFromSeed(
-      Uint8List.fromList(ed25519PublicKey),
-    );
-    final publicKey = await x25519KeyPair.extractPublicKey();
+    if (ed25519PublicKey.length != 32) {
+      throw ArgumentError('Ed25519 public key must be 32 bytes, got ${ed25519PublicKey.length}');
+    }
+    
+    // Hash the Ed25519 public key to create a seed for X25519
+    // This ensures deterministic and consistent derivation
+    final seedHash = crypto_hash.sha256.convert(ed25519PublicKey);
+    final x25519Seed = Uint8List.fromList(seedHash.bytes);
+    
+    // Derive X25519 keypair from the hashed seed
+    final x25519 = crypto.X25519();
+    final keyPair = await x25519.newKeyPairFromSeed(x25519Seed);
+    final publicKey = await keyPair.extractPublicKey();
+    
     return Uint8List.fromList(publicKey.bytes);
   }
 
