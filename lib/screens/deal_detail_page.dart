@@ -598,7 +598,9 @@ class _DealDetailPageState extends State<DealDetailPage> {
                       const SizedBox(height: 8),
                       _InfoRow(
                         label: 'Transaction',
-                        value: '${deal.solanaTxHash.substring(0, 8)}...',
+                        value: deal.solanaTxHash != null 
+                            ? '${deal.solanaTxHash!.substring(0, 8)}...'
+                            : 'Pending',
                         theme: theme,
                       ),
                       if (deal.dealMeta?.category != null) ...[

@@ -4,7 +4,7 @@ class Deal {
   final String? sellerWallet;
   final String status;
   final String? datasetId;
-  final String solanaTxHash;
+  final String? solanaTxHash;
   final String icon;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -17,7 +17,7 @@ class Deal {
     this.sellerWallet,
     required this.status,
     this.datasetId,
-    required this.solanaTxHash,
+    this.solanaTxHash,
     required this.icon,
     required this.createdAt,
     required this.updatedAt,
@@ -32,7 +32,7 @@ class Deal {
       sellerWallet: json['seller_wallet'] as String?,
       status: json['status'] as String,
       datasetId: json['dataset_id'] as String?,
-      solanaTxHash: json['solana_tx_hash'] as String,
+      solanaTxHash: json['solana_tx_hash'] as String?,
       icon: json['icon'] as String? ?? '📊',
       createdAt: DateTime.parse(json['created_at'] as String).toUtc(),
       updatedAt: DateTime.parse(json['updated_at'] as String).toUtc(),
@@ -68,8 +68,8 @@ class DealMeta {
   final List<String> dataSubcategories;
   final List<String> dataFieldsRequired;
   final String price;
-  final String requestDescription;
-  final String buyerWallet;
+  final String? requestDescription;
+  final String? buyerWallet;
 
   DealMeta({
     required this.currency,
@@ -77,8 +77,8 @@ class DealMeta {
     required this.dataSubcategories,
     required this.dataFieldsRequired,
     required this.price,
-    required this.requestDescription,
-    required this.buyerWallet,
+    this.requestDescription,
+    this.buyerWallet,
   });
 
   factory DealMeta.fromJson(Map<String, dynamic> json) {
@@ -95,9 +95,9 @@ class DealMeta {
               ?.map((e) => e as String)
               .toList() ??
           [],
-      price: json['price'] as String,
-      requestDescription: json['request_description'] as String,
-      buyerWallet: json['buyer_wallet'] as String,
+      price: json['price']?.toString() ?? '0',
+      requestDescription: json['request_description'] as String?,
+      buyerWallet: json['buyer_wallet'] as String?,
     );
   }
 
