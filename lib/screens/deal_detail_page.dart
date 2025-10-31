@@ -12,11 +12,7 @@ class DealDetailPage extends StatefulWidget {
   final String dealId;
   final VoidCallback? onBack;
 
-  const DealDetailPage({
-    super.key,
-    required this.dealId,
-    this.onBack,
-  });
+  const DealDetailPage({super.key, required this.dealId, this.onBack});
 
   @override
   State<DealDetailPage> createState() => _DealDetailPageState();
@@ -47,7 +43,6 @@ class _DealDetailPageState extends State<DealDetailPage> {
     }
   }
 
-
   String _formatDateTime(DateTime dateTime) {
     return DateFormat('MMM dd, yyyy HH:mm').format(dateTime);
   }
@@ -64,7 +59,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
       // Step 1: Verify wallet exists (seller wallet)
       await _walletService.initialize();
       final hasWallet = await _walletService.hasWallet();
-      
+
       if (!hasWallet) {
         if (mounted) {
           setState(() => _isAccepting = false);
@@ -77,12 +72,14 @@ class _DealDetailPageState extends State<DealDetailPage> {
         }
         return;
       }
-      
+
       await _walletService.getEd25519PublicKey();
       final sellerWallet = _walletService.getPublicKeyBase58();
-      
-      debugPrint('🔍 Accepting deal ${widget.dealId} as seller with wallet: $sellerWallet');
-      
+
+      debugPrint(
+        '🔍 Accepting deal ${widget.dealId} as seller with wallet: $sellerWallet',
+      );
+
       // Step 2: Show progress dialog
       if (mounted) {
         showDialog(
@@ -100,31 +97,37 @@ class _DealDetailPageState extends State<DealDetailPage> {
           ),
         );
       }
-      
+
       // Step 3: Collect and prepare dataset
       // PRODUCTION: Implement DataCollectionService to gather real user data
       // based on deal.dealMeta.dataCategory and deal.dealMeta.dataSubcategories
       // For now, we'll create a placeholder dataset for testing
       final datasetCsv = _createPlaceholderDatasetCsv(_deal!);
       final datasetBytes = Uint8List.fromList(utf8.encode(datasetCsv));
-      
-      debugPrint('📦 Dataset collected: ${datasetBytes.length} bytes (CSV format)');
-      
+
+      debugPrint(
+        '📦 Dataset collected: ${datasetBytes.length} bytes (CSV format)',
+      );
+
       // Step 4: Encrypt dataset with AES-256-GCM for multiple recipients
       final encryptionEnvelope = await _encryptionService.encryptForRecipients(
         data: datasetBytes,
         recipientSolanaPublicKeys: [
-          _deal!.buyerWallet,   // Buyer can decrypt
-          sellerWallet,         // Seller can decrypt
+          _deal!.buyerWallet, // Buyer can decrypt
+          sellerWallet, // Seller can decrypt
         ],
       );
-      
+
       // Extract encrypted data for upload
       final encryptedDataset = base64Decode(encryptionEnvelope.ciphertext);
-      
-      debugPrint('🔐 Dataset encrypted with AES-256-GCM: ${encryptedDataset.length} bytes');
-      debugPrint('🔑 Created ${encryptionEnvelope.wraps.length} key wraps for multi-recipient access');
-      
+
+      debugPrint(
+        '🔐 Dataset encrypted with AES-256-GCM: ${encryptedDataset.length} bytes',
+      );
+      debugPrint(
+        '🔑 Created ${encryptionEnvelope.wraps.length} key wraps for multi-recipient access',
+      );
+
       // Step 5: Upload to IPFS and Azure
       if (mounted) {
         Navigator.of(context).pop(); // Close preparing dialog
@@ -143,10 +146,11 @@ class _DealDetailPageState extends State<DealDetailPage> {
           ),
         );
       }
-      
+
       final uploadResult = await _storageService.uploadToBoth(
         encryptedDataset,
-        filename: 'deal_${widget.dealId}_${DateTime.now().millisecondsSinceEpoch}.csv.enc',
+        filename:
+            'deal_${widget.dealId}_${DateTime.now().millisecondsSinceEpoch}.csv.enc',
         metadata: {
           'dealId': widget.dealId,
           'sellerWallet': sellerWallet,
@@ -155,26 +159,28 @@ class _DealDetailPageState extends State<DealDetailPage> {
           'contentType': 'text/csv',
         },
       );
-      
+
       final ipfsCid = uploadResult['ipfs'] ?? 'not_uploaded';
       final azureUrl = uploadResult['azure'] ?? 'not_uploaded';
-      
+
       // At least one must have succeeded (checked in StorageService)
       debugPrint('☁️ IPFS: $ipfsCid');
       debugPrint('☁️ Azure: $azureUrl');
-      
+
       // Step 6: Generate data hash
       final dataHash = _storageService.generateHash(encryptedDataset);
       debugPrint('🔑 Data hash: $dataHash');
-      
+
       // Step 7: Serialize encryption envelope and base64-encode for backend
       final envelopeJson = encryptionEnvelope.toJsonString();
       final encryptedAesKey = base64Encode(utf8.encode(envelopeJson));
-      
+
       debugPrint('📦 Encryption envelope JSON: ${envelopeJson.length} bytes');
-      debugPrint('📦 Encrypted AES key (base64): ${encryptedAesKey.length} bytes');
+      debugPrint(
+        '📦 Encrypted AES key (base64): ${encryptedAesKey.length} bytes',
+      );
       debugPrint('✅ Multi-recipient encryption complete (buyer + seller)');
-      
+
       // Step 8: Create dataset in backend
       if (mounted) {
         Navigator.of(context).pop(); // Close upload dialog
@@ -193,11 +199,12 @@ class _DealDetailPageState extends State<DealDetailPage> {
           ),
         );
       }
-      
+
       final dealMeta = _deal!.dealMeta;
       final createDatasetResult = await _dealsService.createDataset(
-        name: '${dealMeta?.dataCategory ?? "Data"} for Deal ${widget.dealId.substring(0, 8)}',
-        description: dealMeta?.requestDescription ?? 'Dataset for accepted deal',
+        name: dealMeta?.dataCategory ?? 'Data',
+        description:
+            dealMeta?.requestDescription ?? 'Dataset for accepted deal',
         price: double.tryParse(dealMeta?.price ?? '0') ?? 0.0,
         currency: dealMeta?.currency ?? 'SOL',
         ipfsCid: ipfsCid,
@@ -205,7 +212,10 @@ class _DealDetailPageState extends State<DealDetailPage> {
         dataHash: dataHash,
         encryptedAesKey: encryptedAesKey,
         ownerWalletPubkey: sellerWallet,
-        dataStartTime: DateTime.now().toUtc().subtract(const Duration(days: 7)).toIso8601String(),
+        dataStartTime: DateTime.now()
+            .toUtc()
+            .subtract(const Duration(days: 7))
+            .toIso8601String(),
         dataEndTime: DateTime.now().toUtc().toIso8601String(),
         dataMeta: {
           'dealId': widget.dealId,
@@ -217,16 +227,18 @@ class _DealDetailPageState extends State<DealDetailPage> {
         icon: _deal!.icon,
         tags: dealMeta?.dataSubcategories ?? [],
       );
-      
+
       if (createDatasetResult['success'] != true) {
-        throw Exception(createDatasetResult['error'] ?? 'Failed to create dataset');
+        throw Exception(
+          createDatasetResult['error'] ?? 'Failed to create dataset',
+        );
       }
-      
+
       final datasetData = createDatasetResult['data'] as Map<String, dynamic>;
       final datasetId = datasetData['dataset_id'] as String;
-      
+
       debugPrint('✅ Dataset created with ID: $datasetId');
-      
+
       // Step 9: Accept the deal with dataset_id
       if (mounted) {
         Navigator.of(context).pop(); // Close dataset creation dialog
@@ -245,19 +257,19 @@ class _DealDetailPageState extends State<DealDetailPage> {
           ),
         );
       }
-      
+
       final result = await _dealsService.acceptDeal(
         widget.dealId,
         sellerWallet,
         datasetId,
         encryptedAesKey,
       );
-      
+
       // Close progress dialog
       if (mounted) {
         Navigator.of(context).pop();
       }
-      
+
       if (mounted) {
         setState(() {
           _isAccepting = false;
@@ -290,17 +302,14 @@ class _DealDetailPageState extends State<DealDetailPage> {
       if (mounted) {
         setState(() => _isAccepting = false);
         messenger.showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     }
   }
 
   /// Create a placeholder dataset in CSV format based on deal requirements
-  /// 
+  ///
   /// PRODUCTION IMPLEMENTATION REQUIRED:
   /// Replace with DataCollectionService that:
   /// 1. Reads deal.dealMeta.dataCategory (e.g., 'Health', 'Location')
@@ -311,81 +320,99 @@ class _DealDetailPageState extends State<DealDetailPage> {
   String _createPlaceholderDatasetCsv(Deal deal) {
     final dealMeta = deal.dealMeta;
     final now = DateTime.now();
-    
-    debugPrint('⚠️ Using placeholder CSV dataset - implement actual data collection!');
-    
+
+    debugPrint(
+      '⚠️ Using placeholder CSV dataset - implement actual data collection!',
+    );
+
     // Generate CSV format with metadata header and data rows
     final csvBuffer = StringBuffer();
-    
+
     // Metadata section (as comments)
     csvBuffer.writeln('# ZDatar Dataset Export');
     csvBuffer.writeln('# Deal ID: ${deal.dealId}');
     csvBuffer.writeln('# Category: ${dealMeta?.dataCategory ?? 'General'}');
-    csvBuffer.writeln('# Subcategories: ${(dealMeta?.dataSubcategories ?? []).join(', ')}');
-    csvBuffer.writeln('# Required Fields: ${(dealMeta?.dataFieldsRequired ?? []).join(', ')}');
+    csvBuffer.writeln(
+      '# Subcategories: ${(dealMeta?.dataSubcategories ?? []).join(', ')}',
+    );
+    csvBuffer.writeln(
+      '# Required Fields: ${(dealMeta?.dataFieldsRequired ?? []).join(', ')}',
+    );
     csvBuffer.writeln('# Collected At: ${now.toUtc().toIso8601String()}');
     csvBuffer.writeln('# Version: 1.0');
     csvBuffer.writeln('#');
-    
+
     // CSV Header row - Always include timestamp as first column
     final fields = dealMeta?.dataFieldsRequired ?? ['value', 'unit'];
     csvBuffer.writeln('timestamp,${fields.join(',')}');
-    
+
     // CSV Data rows (placeholder data)
     // In production, this would be real collected data
     for (int i = 0; i < 5; i++) {
       final row = <String>[];
-      
+
       // Add Unix timestamp in milliseconds as first column
       final rowTimestamp = now.toUtc().subtract(Duration(hours: i));
       final unixTimestampMs = rowTimestamp.millisecondsSinceEpoch;
       row.add('$unixTimestampMs');
-      
+
       for (final field in fields) {
         // Generate placeholder data based on field name patterns
         final fieldLower = field.toLowerCase();
-        
-        if (fieldLower.contains('_mbps') || fieldLower.contains('download') || fieldLower.contains('upload')) {
+
+        if (fieldLower.contains('_mbps') ||
+            fieldLower.contains('download') ||
+            fieldLower.contains('upload')) {
           row.add('${50 + i * 5}.$i'); // Network speed placeholder
-        } else if (fieldLower.contains('latency') || fieldLower.contains('_ms')) {
+        } else if (fieldLower.contains('latency') ||
+            fieldLower.contains('_ms')) {
           row.add('${20 + i}'); // Latency placeholder
-        } else if (fieldLower.contains('signal') || fieldLower.contains('bars')) {
+        } else if (fieldLower.contains('signal') ||
+            fieldLower.contains('bars')) {
           row.add('${4 - (i % 4)}'); // Signal strength placeholder
-        } else if (fieldLower.contains('battery') || fieldLower.contains('level')) {
+        } else if (fieldLower.contains('battery') ||
+            fieldLower.contains('level')) {
           row.add('${85 - i * 2}'); // Battery level placeholder
-        } else if (fieldLower.contains('percent') || fieldLower.contains('distribution')) {
+        } else if (fieldLower.contains('percent') ||
+            fieldLower.contains('distribution')) {
           row.add('${20 + i * 3}.$i'); // Percentage placeholder
-        } else if (fieldLower.contains('count') || fieldLower.contains('number')) {
+        } else if (fieldLower.contains('count') ||
+            fieldLower.contains('number')) {
           row.add('${100 + i * 10}'); // Count placeholder
-        } else if (fieldLower.contains('enabled') || fieldLower.contains('charging') || fieldLower.contains('saver')) {
+        } else if (fieldLower.contains('enabled') ||
+            fieldLower.contains('charging') ||
+            fieldLower.contains('saver')) {
           row.add(i % 2 == 0 ? 'true' : 'false'); // Boolean placeholder
-        } else if (fieldLower.contains('status') || fieldLower.contains('state') || fieldLower.contains('type')) {
+        } else if (fieldLower.contains('status') ||
+            fieldLower.contains('state') ||
+            fieldLower.contains('type')) {
           row.add('active'); // Status placeholder
-        } else if (fieldLower.contains('latitude') || fieldLower.contains('longitude')) {
+        } else if (fieldLower.contains('latitude') ||
+            fieldLower.contains('longitude')) {
           row.add('${1.2649 + i * 0.001}'); // Coordinate placeholder
-        } else if (fieldLower.contains('_x') || fieldLower.contains('_y') || fieldLower.contains('_z')) {
+        } else if (fieldLower.contains('_x') ||
+            fieldLower.contains('_y') ||
+            fieldLower.contains('_z')) {
           row.add('${(i - 2) * 0.5}'); // Sensor axis placeholder
         } else {
           row.add('placeholder_$i'); // Generic placeholder
         }
       }
-      
+
       csvBuffer.writeln(row.join(','));
     }
-    
+
     return csvBuffer.toString();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     if (_isLoading) {
       return Scaffold(
         backgroundColor: theme.colorScheme.primary,
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -480,10 +507,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              icon,
-                              style: const TextStyle(fontSize: 80),
-                            ),
+                            Text(icon, style: const TextStyle(fontSize: 80)),
                             const SizedBox(height: 16),
                             Text(
                               dataType,
@@ -585,7 +609,8 @@ class _DealDetailPageState extends State<DealDetailPage> {
                           theme: theme,
                         ),
                       ],
-                      if (deal.dealMeta?.dataSubcategories.isNotEmpty == true) ...[
+                      if (deal.dealMeta?.dataSubcategories.isNotEmpty ==
+                          true) ...[
                         const SizedBox(height: 8),
                         _InfoRow(
                           label: 'Subcategories',
@@ -593,7 +618,8 @@ class _DealDetailPageState extends State<DealDetailPage> {
                           theme: theme,
                         ),
                       ],
-                      if (deal.dealMeta?.dataFieldsRequired.isNotEmpty == true) ...[
+                      if (deal.dealMeta?.dataFieldsRequired.isNotEmpty ==
+                          true) ...[
                         const SizedBox(height: 16),
                         Text(
                           'Required Data Fields (${deal.dealMeta!.dataFieldsRequired.length})',
@@ -606,17 +632,23 @@ class _DealDetailPageState extends State<DealDetailPage> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: deal.dealMeta!.dataFieldsRequired.map((field) {
+                          children: deal.dealMeta!.dataFieldsRequired.map((
+                            field,
+                          ) {
                             return Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.secondary.withValues(alpha: 0.1),
+                                color: theme.colorScheme.secondary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: theme.colorScheme.secondary.withValues(alpha: 0.3),
+                                  color: theme.colorScheme.secondary.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   width: 1,
                                 ),
                               ),
