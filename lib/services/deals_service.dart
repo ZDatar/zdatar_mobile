@@ -84,6 +84,7 @@ class DealsService {
     required String dataEndTime,
     required Map<String, dynamic> dataMeta,
     required int fileSize,
+    required String icon,
     String? region,
     List<String>? tags,
   }) async {
@@ -106,6 +107,7 @@ class DealsService {
         'data_end_time': dataEndTime,
         'data_meta': dataMeta,
         'file_size': fileSize,
+        'icon': icon,
         if (region != null) 'region': region,
         if (tags != null && tags.isNotEmpty) 'tags': tags,
       };

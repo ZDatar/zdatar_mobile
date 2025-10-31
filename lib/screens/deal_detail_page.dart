@@ -211,9 +211,10 @@ class _DealDetailPageState extends State<DealDetailPage> {
           'dealId': widget.dealId,
           'fields': dealMeta?.dataFieldsRequired ?? [],
           'category': dealMeta?.dataCategory ?? 'General',
-          'data_type': dealMeta?.dataType ?? 'General',
+          'subcategories': dealMeta?.dataSubcategories ?? [],
         },
         fileSize: encryptedDataset.length,
+        icon: _deal!.icon,
         tags: dealMeta?.dataSubcategories ?? [],
       );
       
@@ -688,6 +689,7 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
@@ -695,11 +697,17 @@ class _InfoRow extends StatelessWidget {
             color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
-        Text(
-          value,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

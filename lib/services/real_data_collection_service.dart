@@ -343,7 +343,8 @@ class RealDataCollectionService {
           // Try to get current position first
           final position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.low,
-            timeLimit: const Duration(seconds: 15),
+            timeLimit: const Duration(seconds: 5),
+            forceAndroidLocationManager: true,
           );
           return {
             'timestamp': timestamp.toIso8601String(),
@@ -353,7 +354,7 @@ class RealDataCollectionService {
             'accuracy_meters': position.accuracy,
           };
         } catch (e) {
-          _logger.w('Failed to get current position, trying last known position: $e');
+          _logger.d('Current position timeout, using last known position: ${e.runtimeType}');
           
           // Fallback to last known position if current position fails
           try {
@@ -395,7 +396,8 @@ class RealDataCollectionService {
           // Try to get current position first
           final position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high,
-            timeLimit: const Duration(seconds: 20),
+            timeLimit: const Duration(seconds: 8),
+            forceAndroidLocationManager: true,
           );
           return {
             'timestamp': timestamp.toIso8601String(),
@@ -407,7 +409,7 @@ class RealDataCollectionService {
             'heading': position.heading,
           };
         } catch (e) {
-          _logger.w('Failed to get current precise position, trying last known position: $e');
+          _logger.d('Current precise position timeout, using last known position: ${e.runtimeType}');
           
           // Fallback to last known position if current position fails
           try {
@@ -1216,22 +1218,46 @@ class RealDataCollectionService {
       // Calculate aggregated values
       final totalSteps = stepsData
           .where((data) => data.type == HealthDataType.STEPS)
-          .fold<double>(0, (sum, data) => sum + (data.value as num).toDouble());
+          .fold<double>(0, (sum, data) {
+            final value = data.value;
+            if (value is NumericHealthValue) {
+              return sum + value.numericValue.toDouble();
+            }
+            return sum + (value as num).toDouble();
+          });
       
       final avgHeartRate = heartRateData.isNotEmpty
           ? heartRateData
               .where((data) => data.type == HealthDataType.HEART_RATE)
-              .map((data) => (data.value as num).toDouble())
+              .map((data) {
+                final value = data.value;
+                if (value is NumericHealthValue) {
+                  return value.numericValue.toDouble();
+                }
+                return (value as num).toDouble();
+              })
               .reduce((a, b) => a + b) / heartRateData.length
           : null;
       
       final totalActiveEnergy = activeEnergyData
           .where((data) => data.type == HealthDataType.ACTIVE_ENERGY_BURNED)
-          .fold<double>(0, (sum, data) => sum + (data.value as num).toDouble());
+          .fold<double>(0, (sum, data) {
+            final value = data.value;
+            if (value is NumericHealthValue) {
+              return sum + value.numericValue.toDouble();
+            }
+            return sum + (value as num).toDouble();
+          });
       
       final totalDistance = distanceData
           .where((data) => data.type == HealthDataType.DISTANCE_WALKING_RUNNING)
-          .fold<double>(0, (sum, data) => sum + (data.value as num).toDouble());
+          .fold<double>(0, (sum, data) {
+            final value = data.value;
+            if (value is NumericHealthValue) {
+              return sum + value.numericValue.toDouble();
+            }
+            return sum + (value as num).toDouble();
+          });
       
       return {
         'timestamp': timestamp.toIso8601String(),
