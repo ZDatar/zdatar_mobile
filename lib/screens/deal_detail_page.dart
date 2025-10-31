@@ -100,7 +100,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
 
       // Step 3: Collect and prepare dataset
       // PRODUCTION: Implement DataCollectionService to gather real user data
-      // based on deal.dealMeta.dataCategory and deal.dealMeta.dataSubcategories
+      // based on deal.dealMeta.category and deal.dealMeta.dataSubcategories
       // For now, we'll create a placeholder dataset for testing
       final datasetCsv = _createPlaceholderDatasetCsv(_deal!);
       final datasetBytes = Uint8List.fromList(utf8.encode(datasetCsv));
@@ -202,7 +202,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
 
       final dealMeta = _deal!.dealMeta;
       final createDatasetResult = await _dealsService.createDataset(
-        name: dealMeta?.dataCategory ?? 'Data',
+        name: dealMeta?.category ?? 'Data',
         description:
             dealMeta?.requestDescription ?? 'Dataset for accepted deal',
         price: double.tryParse(dealMeta?.price ?? '0') ?? 0.0,
@@ -220,7 +220,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
         dataMeta: {
           'dealId': widget.dealId,
           'fields': dealMeta?.dataFieldsRequired ?? [],
-          'category': dealMeta?.dataCategory ?? 'General',
+          'category': dealMeta?.category ?? 'General',
           'subcategories': dealMeta?.dataSubcategories ?? [],
         },
         fileSize: encryptedDataset.length,
@@ -312,7 +312,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
   ///
   /// PRODUCTION IMPLEMENTATION REQUIRED:
   /// Replace with DataCollectionService that:
-  /// 1. Reads deal.dealMeta.dataCategory (e.g., 'Health', 'Location')
+  /// 1. Reads deal.dealMeta.category (e.g., 'Health', 'Location')
   /// 2. Reads deal.dealMeta.dataSubcategories (e.g., ['steps', 'heart_rate'])
   /// 3. Reads deal.dealMeta.dataFieldsRequired
   /// 4. Collects actual sensor/HealthKit/location data from device
@@ -331,7 +331,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
     // Metadata section (as comments)
     csvBuffer.writeln('# ZDatar Dataset Export');
     csvBuffer.writeln('# Deal ID: ${deal.dealId}');
-    csvBuffer.writeln('# Category: ${dealMeta?.dataCategory ?? 'General'}');
+    csvBuffer.writeln('# Category: ${dealMeta?.category ?? 'General'}');
     csvBuffer.writeln(
       '# Subcategories: ${(dealMeta?.dataSubcategories ?? []).join(', ')}',
     );
@@ -466,7 +466,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
     final deal = _deal!;
     final price = deal.dealMeta?.price ?? '0';
     final currency = deal.dealMeta?.currency ?? 'SOL';
-    final dataType = deal.dealMeta?.dataType ?? 'Data';
+    final category = deal.dealMeta?.category ?? 'Data';
     final description = deal.dealMeta?.requestDescription ?? 'No description';
     final icon = deal.icon;
 
@@ -510,7 +510,7 @@ class _DealDetailPageState extends State<DealDetailPage> {
                             Text(icon, style: const TextStyle(fontSize: 80)),
                             const SizedBox(height: 16),
                             Text(
-                              dataType,
+                              category,
                               style: theme.textTheme.headlineLarge,
                             ),
                             const SizedBox(height: 4),
@@ -601,11 +601,11 @@ class _DealDetailPageState extends State<DealDetailPage> {
                         value: '${deal.solanaTxHash.substring(0, 8)}...',
                         theme: theme,
                       ),
-                      if (deal.dealMeta?.dataCategory != null) ...[
+                      if (deal.dealMeta?.category != null) ...[
                         const SizedBox(height: 8),
                         _InfoRow(
                           label: 'Data Category',
-                          value: deal.dealMeta!.dataCategory,
+                          value: deal.dealMeta!.category,
                           theme: theme,
                         ),
                       ],

@@ -36,7 +36,7 @@ class Deal {
       icon: json['icon'] as String? ?? '📊',
       createdAt: DateTime.parse(json['created_at'] as String).toUtc(),
       updatedAt: DateTime.parse(json['updated_at'] as String).toUtc(),
-      expiresAt: json['expires_at'] != null 
+      expiresAt: json['expires_at'] != null
           ? DateTime.parse(json['expires_at'] as String).toUtc()
           : null,
       dealMeta: json['deal_meta'] != null
@@ -64,8 +64,7 @@ class Deal {
 
 class DealMeta {
   final String currency;
-  final String? dataType;
-  final String dataCategory;
+  final String category;
   final List<String> dataSubcategories;
   final List<String> dataFieldsRequired;
   final String price;
@@ -74,8 +73,7 @@ class DealMeta {
 
   DealMeta({
     required this.currency,
-    this.dataType,
-    required this.dataCategory,
+    required this.category,
     required this.dataSubcategories,
     required this.dataFieldsRequired,
     required this.price,
@@ -86,14 +84,17 @@ class DealMeta {
   factory DealMeta.fromJson(Map<String, dynamic> json) {
     return DealMeta(
       currency: json['currency'] as String,
-      dataType: json['data_type'] as String?,
-      dataCategory: json['data_category'] as String,
-      dataSubcategories: (json['subcategories'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList() ?? [],
-      dataFieldsRequired: (json['data_fields_required'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList() ?? [],
+      category: json['category'] as String,
+      dataSubcategories:
+          (json['subcategories'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      dataFieldsRequired:
+          (json['data_fields_required'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
       price: json['price'] as String,
       requestDescription: json['request_description'] as String,
       buyerWallet: json['buyer_wallet'] as String,
@@ -103,8 +104,7 @@ class DealMeta {
   Map<String, dynamic> toJson() {
     return {
       'currency': currency,
-      if (dataType != null) 'data_type': dataType,
-      'data_category': dataCategory,
+      'data_category': category,
       'data_subcategories': dataSubcategories,
       'data_fields_required': dataFieldsRequired,
       'price': price,
@@ -118,10 +118,7 @@ class DealsResponse {
   final List<Deal> deals;
   final int total;
 
-  DealsResponse({
-    required this.deals,
-    required this.total,
-  });
+  DealsResponse({required this.deals, required this.total});
 
   factory DealsResponse.fromJson(Map<String, dynamic> json) {
     return DealsResponse(

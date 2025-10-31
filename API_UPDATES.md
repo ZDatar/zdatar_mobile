@@ -24,7 +24,7 @@ class Deal {
 class DealMeta {
   final String currency;
   final String dataType;
-  final String dataCategory;              // ← NEW
+  final String category;              // ← NEW
   final List<String> dataSubcategories;   // ← NEW
   final List<String> dataFieldsRequired;  // ← NEW
   final String price;
@@ -50,7 +50,7 @@ DealMeta(
 DealMeta(
   currency: 'SOL',
   dataType: 'App & Digital Behavior',
-  dataCategory: 'App & Digital Behavior',        // Main category
+  category: 'App & Digital Behavior',        // Main category
   dataSubcategories: [                            // Specific subcategories
     'Browsing Categories',
     'Network Throughput'
@@ -117,7 +117,7 @@ Text(
 ```dart
 _InfoRow(
   label: 'Data Category',
-  value: deal.dealMeta!.dataCategory,  // 'App & Digital Behavior'
+  value: deal.dealMeta!.category,  // 'App & Digital Behavior'
 )
 ```
 
@@ -182,7 +182,7 @@ Deal.fromJson(json) {
 }
 
 DealMeta.fromJson(json) {
-  dataCategory: json['data_category'],
+  category: json['data_category'],
   dataSubcategories: (json['data_subcategories'] as List)
       .map((e) => e as String)
       .toList(),
@@ -274,14 +274,14 @@ DealMeta.fromJson(json) {
 When implementing deal acceptance flow, the app will:
 
 1. **Verify Data Availability**
-   - Check if `dataCategory` is enabled in My Data page
+   - Check if `category` is enabled in My Data page
    - Verify all `dataSubcategories` are active
    - Ensure data exists for all `dataFieldsRequired`
 
 2. **Export Filtered Data**
    ```dart
    final csvData = await DataExportService().exportToCSV(
-     categories: [deal.dealMeta.dataCategory],
+     categories: [deal.dealMeta.category],
      subcategories: deal.dealMeta.dataSubcategories,
    );
    

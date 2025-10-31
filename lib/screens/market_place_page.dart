@@ -182,7 +182,7 @@ class _MarketCard extends StatelessWidget {
     final theme = Theme.of(context);
     final price = deal.dealMeta?.price ?? '0';
     final currency = deal.dealMeta?.currency ?? 'SOL';
-    final dataType = deal.dealMeta?.dataType ?? 'Data';
+    final category = deal.dealMeta?.category ?? 'Data';
     final description = deal.dealMeta?.requestDescription ?? 'No description';
     
     return Card(
@@ -237,7 +237,7 @@ class _MarketCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      dataType,
+                      category,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

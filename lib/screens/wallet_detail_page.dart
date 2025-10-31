@@ -112,9 +112,7 @@ class _WalletDetailPageState extends State<WalletDetailPage> {
                 _AddressButton(
                   icon: Icons.qr_code_rounded,
                   label: 'Show QR',
-                  onTap: () => _showSnackbar(
-                    'QR code support coming soon.',
-                  ),
+                  onTap: () => _showSnackbar('QR code support coming soon.'),
                 ),
               ],
             ),
@@ -197,28 +195,30 @@ class _WalletDetailPageState extends State<WalletDetailPage> {
               ),
             ),
             const SizedBox(height: 16),
-            ...widget.recentDeals.take(4).map(
-              (deal) => ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
-                  backgroundColor: Colors.white.withValues(alpha: 0.12),
-                  child: Text(deal.icon),
-                ),
-                title: Text(
-                  deal.dealMeta?.dataCategory ?? 'Data deal',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+            ...widget.recentDeals
+                .take(4)
+                .map(
+                  (deal) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.white.withValues(alpha: 0.12),
+                      child: Text(deal.icon),
+                    ),
+                    title: Text(
+                      deal.dealMeta?.category ?? 'Data deal',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      deal.status,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.6),
+                      ),
+                    ),
                   ),
                 ),
-                subtitle: Text(
-                  deal.status,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -245,7 +245,10 @@ class _WalletDetailPageState extends State<WalletDetailPage> {
                     color: Colors.orange.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.lock_outline_rounded, color: Colors.orange),
+                  child: const Icon(
+                    Icons.lock_outline_rounded,
+                    color: Colors.orange,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -328,9 +331,9 @@ class _WalletDetailPageState extends State<WalletDetailPage> {
 
   void _showSnackbar(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

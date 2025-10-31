@@ -731,7 +731,7 @@ class _WalletPageState extends State<WalletPage> {
         child: Text(deal.icon, style: const TextStyle(fontSize: 26)),
       ),
       title: Text(
-        '$label • ${deal.dealMeta?.dataCategory ?? 'Data deal'}',
+        '$label • ${deal.dealMeta?.category ?? 'Data deal'}',
         style: theme.textTheme.titleSmall?.copyWith(
           color: Colors.white.withValues(alpha: 0.9),
           fontWeight: FontWeight.w600,
